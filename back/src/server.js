@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 
 import productRoutes from './routes/productRoutesUpload.js';
 import authRoutes from './routes/authRoutes.js';
+import checkoutRoutes from './routes/checkoutRoutes.js';
 import { setupChat } from './socket.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -33,6 +34,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Routes
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/checkout', checkoutRoutes);
 
 // Socket.io setup
 setupChat(io);

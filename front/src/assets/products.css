@@ -1,0 +1,164 @@
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px;
+}
+
+.product-card {
+  width: 200px;
+}
+
+.product-card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.product-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: #0f0f0f;
+  height: 150px;
+}
+
+.product-image img {
+  max-width: 150px;
+  max-height: 150px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.product-info {
+  padding: 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-name {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #fff;
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.product-brand {
+  color: #888;
+  font-size: 0.8rem;
+  margin: 4px 0;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 8px 0;
+}
+
+.add-to-cart {
+  background: var(--primary-color);
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: auto;
+}
+
+.add-to-cart:hover {
+  opacity: 0.9;
+}
+
+/* Cart Badge */
+.cart-badge {
+  background: var(--primary-color);
+  color: #000;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  position: relative;
+  top: -8px;
+}
+
+/* Cart Summary */
+.cart-summary {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  z-index: 100;
+  width: 300px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.cart-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.cart-item-info {
+  flex-grow: 1;
+}
+
+.cart-item-name {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.cart-item-price {
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+.cart-quantity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-quantity button {
+  background: #2a2a2a;
+  border: none;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cart-total {
+  margin-top: 15px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.checkout-button {
+  width: 100%;
+  background: var(--primary-color);
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  cursor: pointer;
+}
