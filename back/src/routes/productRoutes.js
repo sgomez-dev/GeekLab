@@ -1,7 +1,7 @@
 import express from 'express';
 import Product from '../models/Product.js';
 import StatusCodes from 'http-status-codes';
-import { authenticateJWT } from '../middleware/authMiddleware.js';
+import { authenticateJWT } from '../middleware/authenticateJWT.js';
 
 const router = express.Router();
 
