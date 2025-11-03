@@ -3,6 +3,9 @@
     <h1>GeekLab</h1>
     <div>
       <RouterLink to="/products">Productos</RouterLink>
+      <RouterLink v-if="user && user.role === 'admin'" to="/products/create"
+        >Crear producto</RouterLink
+      >
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink v-if="!user" to="/login">Iniciar sesión</RouterLink>
       <button v-else @click="logout">

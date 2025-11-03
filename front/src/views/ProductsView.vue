@@ -10,9 +10,9 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import api from "@/api/axios";
-import Navbar from "@/components/Navbar.vue";
-import ProductCard from "@/components/ProductCard.vue";
+import api from "../api/axios";
+import Navbar from "../components/Navbar.vue";
+import ProductCard from "../components/ProductCard.vue";
 
 const products = ref([]);
 

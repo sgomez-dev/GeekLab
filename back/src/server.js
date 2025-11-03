@@ -5,9 +5,11 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import productRoutes from './routes/productRoutes.js';
+import productRoutes from './routes/productRoutesUpload.js';
 import authRoutes from './routes/authRoutes.js';
 import { setupChat } from './socket.js'
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -17,9 +19,16 @@ const io = new Server(server, {cors: { origin: '*' }});
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/GeekLab';
 const port = process.env.PORT || 4000;
 
+// compute __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/products', productRoutes);
