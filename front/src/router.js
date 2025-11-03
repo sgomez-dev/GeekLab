@@ -3,16 +3,32 @@ import LoginView from '@/views/LoginView.vue';
 import RegisterView from '@/views/RegisterView.vue';
 import ProductsView from '@/views/ProductsView.vue';
 import ChatView from '@/views/ChatView.vue';
+import { useUserStore } from '@/stores/userStore';
 
 const routes = [
     { path: '/', redirect: '/products' },
     { path: '/login', component: LoginView },
     { path: '/register', component: RegisterView },
-    { path: '/products', component: ProductsView },
-    { path: '/chat', component: ChatView },
+    { path: '/products', component: ProductsView, meta: { requiresAuth: true } },
+    { path: '/chat', component: ChatView, meta: { requiresAuth: true } },
 ];
 
-export default createRouter({
+const router = createRouter({
     history: createWebHistory(),
     routes,
 });
+
+router.beforeEach((to, from, next) => {
+    const userStore = useUserStore();
+    const requiresAuth = to.meta.requiresAuth;
+
+    if (requiresAuth && !userStore.token)
+        return next({ path: '/login' });
+
+    if ((to.path === '/login' || to.path === '/register') && userStore.token) 
+        return next({ path: '/products' });
+
+    next();
+});
+
+export default router;

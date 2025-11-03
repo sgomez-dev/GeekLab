@@ -5,18 +5,22 @@
       <RouterLink to="/products">Productos</RouterLink>
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink v-if="!user" to="/login">Iniciar sesión</RouterLink>
-      <button v-else @click="logout">Cerrar sesión</button>
+      <button v-else @click="logout">
+        Cerrar sesión ({{ user?.username }})
+      </button>
     </div>
   </nav>
 </template>
 
 <script setup>
 import { useUserStore } from "../stores/userStore";
-import { RouterLink, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
+import { computed } from "vue";
 
 const userStore = useUserStore();
 const router = useRouter();
-const user = userStore.user;
+
+const user = computed(() => userStore.user);
 
 function logout() {
   userStore.logout();
