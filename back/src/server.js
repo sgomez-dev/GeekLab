@@ -1,7 +1,6 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -11,6 +10,7 @@ import checkoutRoutes from './routes/checkoutRoutes.js';
 import forumRoutes from './routes/forumRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import { setupForum } from './socket.js'
+import { connectDB } from './config/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -19,7 +19,6 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {cors: { origin: '*' }});
-const mongoUri = process.env.MONGO_URI_PROD || 'mongodb://localhost:27017/GeekLab';
 const port = process.env.PORT || 4000;
 
 // compute __dirname for ES modules
@@ -44,8 +43,6 @@ app.use('/api/orders', orderRoutes);
 setupForum(io);
 
 // MongoDB connection
-mongoose.connect(mongoUri)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
+connectDB();
 
 server.listen(port, () => console.log(`Server running on port ${port}`));
