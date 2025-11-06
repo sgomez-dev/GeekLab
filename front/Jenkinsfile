@@ -11,12 +11,21 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('front') {
-                    withSonarQubeEnv('sonarqube') {
-                        sh """
-                            pwd
-                            ls -la sonar-project.properties || echo 'sonar-project.properties not found'
-                            ${SCANNER_HOME}/bin/sonar-scanner
-                        """
+                    script {
+                        try {
+                            withSonarQubeEnv('sonarqube') {
+                                sh """
+                                    pwd
+                                    ls -la sonar-project.properties || echo 'sonar-project.properties not found'
+                                    echo 'Testing SonarQube connectivity...'
+                                    ${SCANNER_HOME}/bin/sonar-scanner -Dsonar.scanner.force-deprecated-java-version=true
+                                """
+                            }
+                        } catch (Exception e) {
+                            echo "SonarQube analysis failed: ${e.getMessage()}"
+                            echo "Continuing with deployment..."
+                            currentBuild.result = 'UNSTABLE'
+                        }
                     }
                 }
             }
