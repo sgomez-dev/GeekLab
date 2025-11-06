@@ -2,6 +2,9 @@
   <div class="auth-page">
     <VantaBackground />
     <div class="auth-card">
+      <div class="logo-container">
+        <img :src="logoUrl" alt="GeekLab" class="auth-logo" />
+      </div>
       <h2>Registro</h2>
       <form @submit.prevent="onSubmit">
         <label for="username">Nombre de usuario</label>
@@ -27,6 +30,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../stores/userStore";
 import VantaBackground from "../components/VantaBackground.vue";
+import logoUrl from "../assets/geeklab-logo.png";
 
 const username = ref("");
 const email = ref("");
@@ -75,6 +79,17 @@ async function onSubmit() {
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-logo {
+  height: 90px;
+  width: auto;
+}
+
 h2 {
   color: #4247c1;
   text-align: center;

@@ -41,6 +41,18 @@
             <option value="200-500">€200 - €500</option>
             <option value="500+">€500+</option>
           </select>
+          
+          <button 
+            v-if="hasActiveFilters" 
+            @click="clearFilters" 
+            class="clear-filters-btn"
+          >
+            <svg class="clear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Quitar filtros
+          </button>
         </div>
       </div>
       
@@ -88,6 +100,14 @@ const availableTypes = computed(() => {
   return [...new Set(types)].sort();
 });
 
+// Check if there are active filters
+const hasActiveFilters = computed(() => {
+  return searchTerm.value.trim() !== '' || 
+         selectedBrand.value !== '' || 
+         selectedType.value !== '' || 
+         selectedPriceRange.value !== '';
+});
+
 // Filter products based on search and filters
 const filteredProducts = computed(() => {
   let filtered = productsSorted.value;
@@ -129,6 +149,13 @@ const filteredProducts = computed(() => {
 
   return filtered;
 });
+
+function clearFilters() {
+  searchTerm.value = '';
+  selectedBrand.value = '';
+  selectedType.value = '';
+  selectedPriceRange.value = '';
+}
 
 function handleStockUpdate(payload) {
   const id = payload?.productId;
@@ -241,6 +268,33 @@ h2 {
   outline: none;
   border-color: #1c1c29;
   box-shadow: 0 0 0 2px rgba(28, 28, 41, 0.1);
+}
+
+.clear-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  border: 1px solid #4247c1;
+  border-radius: 6px;
+  background: #f0f0f5;
+  color: #4247c1;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.clear-filters-btn:hover {
+  background: #e7e8fb;
+  border-color: #3539a0;
+  color: #3539a0;
+}
+
+.clear-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 .no-results {

@@ -1,5 +1,5 @@
 <template>
-  <div class="wa-chat">
+  <div class="wa-forum">
     <div class="messages" ref="messagesContainer">
       <div
         v-for="msg in messages"
@@ -95,7 +95,7 @@ onMounted(loadMessages);
 </script>
 
 <style scoped>
-.wa-chat {
+.wa-forum {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 70px);

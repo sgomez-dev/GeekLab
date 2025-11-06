@@ -5,6 +5,7 @@ import { authenticateJWT } from '../middleware/authenticateJWT.js';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
@@ -39,6 +40,44 @@ router.get('/ids', async (req, res) => {
         res.json(products.map(p => ({ _id: p._id, name: p.name })));
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error fetching ids' });
+    }
+});
+
+// add or update a review for a product (authenticated users) - MUST be before /:id route
+router.post('/:id/reviews', authenticateJWT, async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        if (!rating || !comment) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Rating and comment are required' });
+        }
+
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
+
+        // Check if user already reviewed
+        const existingIndex = product.reviews.findIndex(r => r.userId?.toString() === req.user.id);
+        if (existingIndex !== -1) {
+            product.reviews[existingIndex].rating = rating;
+            product.reviews[existingIndex].comment = comment;
+            product.reviews[existingIndex].createdAt = new Date();
+        } else {
+            product.reviews.push({
+                userId: req.user.id,
+                username: req.user.username || 'Usuario',
+                rating,
+                comment,
+            });
+        }
+
+        // Recalculate average and count
+        product.numReviews = product.reviews.length;
+        product.averageRating = product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.numReviews;
+
+        await product.save();
+        res.status(StatusCodes.CREATED).json(product);
+    } catch (error) {
+        console.error('Error adding review', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error adding review' });
     }
 });
 

@@ -1,6 +1,8 @@
 <template>
   <nav class="navbar">
-    <h1>GeekLab</h1>
+    <RouterLink to="/products" class="logo-link">
+      <img :src="logoUrl" alt="GeekLab" class="logo" />
+    </RouterLink>
     <div class="nav-links">
       <RouterLink to="/products" class="nav-link">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -16,11 +18,11 @@
         </svg>
         Crear producto
       </RouterLink>
-      <RouterLink to="/chat" class="nav-link">
+      <RouterLink to="/forum" class="nav-link">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        Chat
+        Foro GeekLab
       </RouterLink>
       <RouterLink v-if="user" to="/account" class="nav-link">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -36,7 +38,9 @@
           <circle cx="20" cy="21" r="1"></circle>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
-        <span v-if="itemCount" class="cart-badge">{{ itemCount }}</span>
+        <Transition name="badge-bounce">
+          <span v-if="itemCount" class="cart-badge" :key="itemCount">{{ itemCount }}</span>
+        </Transition>
       </div>
 
       <RouterLink v-if="!user" to="/login" class="nav-link">
@@ -84,6 +88,7 @@ import { useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import CartModal from "./CartModal.vue";
 import AlertModal from "./AlertModal.vue";
+import logoUrl from "../assets/geeklab-logo.png";
 
 const userStore = useUserStore();
 const cartStore = useCartStore();
@@ -170,12 +175,16 @@ async function checkout() {
   margin-left: auto;
 }
 
-h1 {
-  margin: 0;
+.logo-link {
+  display: flex;
+  align-items: center;
   margin-right: 2rem;
-  color: #4247c1;
-  font-size: 1.5rem;
-  font-weight: 600;
+  text-decoration: none;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
 }
 
 .nav-link {
@@ -186,24 +195,53 @@ h1 {
   text-decoration: none;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(66, 71, 193, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.nav-link:hover::before {
+  left: 100%;
 }
 
 .nav-link:hover {
   background: #f0f0f5;
   color: #4247c1;
   text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(66, 71, 193, 0.15);
+}
+
+.nav-link:hover .icon {
+  transform: scale(1.15) rotate(5deg);
 }
 
 .nav-link.router-link-active {
   color: #4247c1;
   font-weight: 500;
+  background: rgba(66, 71, 193, 0.1);
+}
+
+.nav-link.router-link-active .icon {
+  transform: scale(1.1);
 }
 
 .icon {
   width: 18px;
   height: 18px;
   stroke: currentColor;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cart-icon {
@@ -213,7 +251,7 @@ h1 {
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   color: #1c1c29;
 }
@@ -221,6 +259,25 @@ h1 {
 .cart-icon:hover {
   background: #f0f0f5;
   color: #4247c1;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(66, 71, 193, 0.15);
+}
+
+.cart-icon:hover .icon {
+  transform: scale(1.2) rotate(-10deg);
+  animation: cartShake 0.5s ease;
+}
+
+@keyframes cartShake {
+  0%, 100% {
+    transform: scale(1.2) rotate(-10deg);
+  }
+  25% {
+    transform: scale(1.2) rotate(-15deg);
+  }
+  75% {
+    transform: scale(1.2) rotate(-5deg);
+  }
 }
 
 .cart-badge {
@@ -237,6 +294,30 @@ h1 {
   right: -2px;
 }
 
+.badge-bounce-enter-active {
+  animation: badgeBounce 0.5s ease;
+}
+
+.badge-bounce-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.badge-bounce-leave-to {
+  opacity: 0;
+}
+
+@keyframes badgeBounce {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .logout-btn {
   display: flex;
   align-items: center;
@@ -247,13 +328,39 @@ h1 {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(66, 71, 193, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.logout-btn:hover::before {
+  width: 200px;
+  height: 200px;
 }
 
 .logout-btn:hover {
   background: #f0f0f5;
   border-color: #4247c1;
   color: #4247c1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(66, 71, 193, 0.15);
+}
+
+.logout-btn:hover .icon {
+  transform: translateX(3px) scale(1.1);
 }
 
 .user-menu {

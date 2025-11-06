@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from './views/LoginView.vue';
 import RegisterView from './views/RegisterView.vue';
 import ProductsView from './views/ProductsView.vue';
-import ChatView from './views/ChatView.vue';
+import ForumView from './views/ForumView.vue'; 
 import CreateProduct from './views/CreateProduct.vue';
 import ProductDetailView from './views/ProductDetailView.vue';
 import UserProfileView from './views/UserProfileView.vue';
@@ -15,7 +15,7 @@ const routes = [
     { path: '/products', component: ProductsView, meta: { requiresAuth: true } },
     { path: '/products/create', component: CreateProduct, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/products/:id', component: ProductDetailView, meta: { requiresAuth: true } },
-    { path: '/chat', component: ChatView, meta: { requiresAuth: true } },
+    { path: '/forum', component: ForumView, meta: { requiresAuth: true } },
     { path: '/account', component: UserProfileView, meta: { requiresAuth: true } },
 ];
 

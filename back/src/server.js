@@ -10,7 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import checkoutRoutes from './routes/checkoutRoutes.js';
 import forumRoutes from './routes/forumRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-import { setupChat } from './socket.js'
+import { setupForum } from './socket.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -41,7 +41,7 @@ app.use('/api/forum', forumRoutes);
 app.use('/api/orders', orderRoutes);
 
 // Socket.io setup
-setupChat(io);
+setupForum(io);
 
 // MongoDB connection
 mongoose.connect(mongoUri)
