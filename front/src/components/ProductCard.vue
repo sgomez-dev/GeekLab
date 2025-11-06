@@ -117,16 +117,24 @@ function handleImageError(e) {
 }
 
 function addToCart() {
-  if (isOutOfStock.value) return;
+  if (isOutOfStock.value) {
+    showToast('El producto está fuera de stock', 'error', 2000);
+    return;
+  }
+  
+  // Validar stock antes de agregar
+  const result = cartStore.addToCart(props.product);
+  
+  if (!result.success) {
+    showToast(result.error || 'Error al agregar al carrito', 'error', 2000);
+    return;
+  }
   
   // Animación del botón
   isAnimating.value = true;
   setTimeout(() => {
     isAnimating.value = false;
   }, 600);
-  
-  // Agregar al carrito
-  cartStore.addToCart(props.product);
   
   // Mostrar toast
   showToast(`¡${props.product.name} agregado al carrito!`, 'success', 2000);

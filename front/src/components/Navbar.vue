@@ -70,6 +70,7 @@
       @close="showCart = false"
       @increase="increaseQuantity"
       @decrease="decreaseQuantity"
+      @updateQuantity="updateQuantityDirect"
       @checkout="checkout"
     />
 
@@ -117,11 +118,23 @@ function getImageUrl(product) {
 }
 
 function increaseQuantity(item) {
-  cartStore.updateQuantity(item._id, item.quantity + 1);
+  const result = cartStore.updateQuantity(item._id, item.quantity + 1);
+  if (result.success && result.quantity < item.quantity + 1) {
+    // La cantidad fue limitada por el stock
+    alert(`No hay suficiente stock. Disponible: ${item.stock ?? 0} unidades`);
+  }
 }
 
 function decreaseQuantity(item) {
   cartStore.updateQuantity(item._id, item.quantity - 1);
+}
+
+function updateQuantityDirect(item, quantity) {
+  const result = cartStore.updateQuantity(item._id, quantity);
+  if (result.success && result.quantity < quantity) {
+    // La cantidad fue limitada por el stock
+    alert(`No hay suficiente stock. Disponible: ${item.stock ?? 0} unidades`);
+  }
 }
 
 async function checkout() {

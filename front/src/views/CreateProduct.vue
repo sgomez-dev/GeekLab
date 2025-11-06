@@ -3,7 +3,7 @@
     <div class="toolbar">
       <button class="back" @click="goBack">← Atrás</button>
     </div>
-    <h2>Crear Producto</h2>
+    <h2>{{ isEditMode ? 'Editar Producto' : 'Crear Producto' }}</h2>
     <form @submit.prevent="onSubmit" class="create-form">
       <div class="form-group">
         <label for="name">Nombre <span class="required">*</span></label>
@@ -68,45 +68,64 @@
       </div>
 
       <div class="form-group">
-        <label for="image">Imagen <span class="required">*</span></label>
-        <div class="file-input-wrapper">
-          <input 
-            id="image" 
-            type="file" 
-            @change="onFileChange" 
-            accept="image/*"
-            class="file-input"
-            required
-          />
-          <label for="image" class="file-label">
-            <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            <span v-if="!imageFile">Seleccionar imagen</span>
-            <span v-else class="file-name">{{ imageFile.name }}</span>
-          </label>
-        </div>
-        <div v-if="imagePreview" class="image-preview">
-          <img :src="imagePreview" alt="Preview" />
-        </div>
+            <label for="image">Imagen <span class="required" v-if="!isEditMode">*</span></label>
+            <div class="file-input-wrapper">
+              <input 
+                id="image" 
+                type="file" 
+                @change="onFileChange" 
+                accept="image/*"
+                class="file-input"
+                :required="!isEditMode"
+              />
+              <label for="image" class="file-label">
+                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span v-if="!imageFile">{{ isEditMode ? 'Cambiar imagen (opcional)' : 'Seleccionar imagen' }}</span>
+                <span v-else class="file-name">{{ imageFile.name }}</span>
+              </label>
+            </div>
+            <div v-if="imagePreview || currentImageUrl" class="image-preview">
+              <img :src="imagePreview || currentImageUrl" alt="Preview" />
+            </div>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-secondary" @click="goBack">Cancelar</button>
-        <button type="submit" class="btn-primary" :disabled="!isFormValid">Crear Producto</button>
+        <div class="form-actions-left">
+          <button v-if="isEditMode" type="button" class="btn-danger" @click="openDeleteModal" :disabled="isDeleting">
+            Eliminar Producto
+          </button>
+        </div>
+        <div class="form-actions-right">
+          <button type="button" class="btn-secondary" @click="goBack">Cancelar</button>
+          <button type="submit" class="btn-primary" :disabled="!isFormValid">{{ isEditMode ? 'Guardar Cambios' : 'Crear Producto' }}</button>
+        </div>
       </div>
     </form>
 
     <p v-if="error" class="error">{{ error }}</p>
     <p v-if="msg" class="success">{{ msg }}</p>
   </div>
+
+  <!-- Modal de confirmación eliminar -->
+  <div v-if="showDeleteModal" class="modal-backdrop">
+    <div class="modal">
+      <h4>Eliminar producto</h4>
+      <p>¿Seguro que quieres eliminar este producto? Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn" @click="closeDeleteModal" :disabled="isDeleting">Cancelar</button>
+        <button class="btn danger" @click="confirmDelete" :disabled="isDeleting">{{ isDeleting ? 'Eliminando...' : 'Eliminar' }}</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import api from "../api/axios";
 import { useUserStore } from "../stores/userStore";
 
@@ -122,11 +141,17 @@ const category = computed(() => selectedCategory.value === "__new__" ? newCatego
 const stock = ref(0);
 const imageFile = ref(null);
 const imagePreview = ref(null);
+const currentImageUrl = ref(null);
 const error = ref(null);
 const msg = ref(null);
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const products = ref([]);
+const productId = ref(null);
+const isEditMode = computed(() => !!productId.value);
+const showDeleteModal = ref(false);
+const isDeleting = ref(false);
 
 const isFormValid = computed(() => {
   const resolvedBrand = brand.value?.trim();
@@ -138,7 +163,7 @@ const isFormValid = computed(() => {
     resolvedCategory &&
     (price.value !== null && price.value !== "" && !Number.isNaN(Number(price.value))) &&
     (stock.value !== null && stock.value !== "" && Number(stock.value) >= 0) &&
-    !!imageFile.value
+    (isEditMode.value || !!imageFile.value)
   );
 });
 
@@ -207,13 +232,37 @@ async function loadProducts() {
   }
 }
 
+async function loadProduct() {
+  if (!productId.value) return;
+  try {
+    const res = await api.get(`/products/${productId.value}`);
+    const p = res.data;
+    name.value = p.name || "";
+    selectedBrand.value = p.brand || "";
+    selectedCategory.value = p.category || "";
+    price.value = p.price || 0;
+    stock.value = p.stock || 0;
+    description.value = p.description || "";
+    if (p.image) {
+      currentImageUrl.value = p.image.startsWith("http") ? p.image : `http://localhost:4000${p.image}`;
+    }
+  } catch (error) {
+    console.error("Error loading product:", error);
+    error.value = "Error al cargar el producto";
+  }
+}
+
 // extra guard in component as well
 if (!userStore.token || userStore.user?.role !== "admin") {
   router.push("/products");
 }
 
-onMounted(() => {
-  loadProducts();
+onMounted(async () => {
+  await loadProducts();
+  if (route.params.id) {
+    productId.value = route.params.id;
+    await loadProduct();
+  }
 });
 
 async function onSubmit() {
@@ -255,7 +304,7 @@ async function onSubmit() {
     error.value = "El stock es requerido (0 o más)";
     return;
   }
-  if (!imageFile.value) {
+  if (!isEditMode.value && !imageFile.value) {
     error.value = "La imagen es requerida";
     return;
   }
@@ -270,13 +319,43 @@ async function onSubmit() {
     formData.append("stock", stock.value || 0);
     if (imageFile.value) formData.append("image", imageFile.value);
 
-    const res = await api.post("/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    msg.value = "Producto creado correctamente";
+    if (isEditMode.value) {
+      const res = await api.put(`/products/${productId.value}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      msg.value = "Producto actualizado correctamente";
+      setTimeout(() => router.push(`/products/${productId.value}`), 1500);
+    } else {
+      const res = await api.post("/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      msg.value = "Producto creado correctamente";
+      setTimeout(() => router.push("/products"), 1500);
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message || (isEditMode.value ? "Error al actualizar producto" : "Error al crear producto");
+  }
+}
+
+function openDeleteModal() {
+  showDeleteModal.value = true;
+}
+
+function closeDeleteModal() {
+  showDeleteModal.value = false;
+}
+
+async function confirmDelete() {
+  if (!productId.value) return;
+  isDeleting.value = true;
+  try {
+    await api.delete(`/products/${productId.value}`);
+    msg.value = "Producto eliminado correctamente";
     setTimeout(() => router.push("/products"), 1500);
   } catch (err) {
-    error.value = err.response?.data?.message || "Error al crear producto";
+    error.value = err.response?.data?.message || "Error al eliminar producto";
+    isDeleting.value = false;
+    closeDeleteModal();
   }
 }
 </script>
@@ -497,11 +576,23 @@ select:focus {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-actions-left {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-actions-right {
+  display: flex;
+  gap: 1rem;
 }
 
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-danger {
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-weight: 500;
@@ -540,6 +631,24 @@ select:focus {
   border-color: #1c1c29;
 }
 
+.btn-danger {
+  background: #ff6b6b;
+  color: #ffffff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #ff5252;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+}
+
+.btn-danger:disabled {
+  background: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .error {
   color: #ff6b6b;
   margin-top: 1rem;
@@ -558,6 +667,71 @@ select:focus {
   border-left: 4px solid #30a84a;
 }
 
+/* Modal styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  background: #fff;
+  color: #1c1c29;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  width: 320px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal h4 {
+  margin: 0 0 8px;
+  color: #4247c1;
+}
+
+.modal p {
+  margin: 0 0 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal .btn {
+  background: #f0f0f5;
+  color: #1c1c29;
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal .btn:hover {
+  background: #e8e8f2;
+}
+
+.modal .btn.danger {
+  background: #ff6b6b;
+  color: #fff;
+  border-color: #ff6b6b;
+}
+
+.modal .btn.danger:hover {
+  background: #ff5252;
+}
+
+.modal .btn:disabled {
+  background: #cccccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
@@ -565,10 +739,18 @@ select:focus {
   
   .form-actions {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions-left,
+  .form-actions-right {
+    width: 100%;
+    flex-direction: column;
   }
   
   .btn-primary,
-  .btn-secondary {
+  .btn-secondary,
+  .btn-danger {
     width: 100%;
   }
 }

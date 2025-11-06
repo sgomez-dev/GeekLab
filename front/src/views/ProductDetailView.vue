@@ -2,6 +2,7 @@
   <div class="product-detail">
     <div class="toolbar">
       <button class="back" @click="goBack">← Atrás</button>
+      <button v-if="isAdmin" class="edit-btn" @click="editProduct">Editar Producto</button>
     </div>
     <div v-if="loading" class="container">
       Cargando...
@@ -182,6 +183,12 @@ function goBack() {
   else router.push('/products');
 }
 
+function editProduct() {
+  if (!product.value) return;
+  const id = product.value._id || product.value.id;
+  router.push(`/products/${id}/edit`);
+}
+
 function handleStockUpdate(payload) {
   const id = payload?.productId;
   if (product.value && (product.value._id || product.value.id) === id) {
@@ -211,14 +218,25 @@ async function load() {
 function addToCart() {
   if (!product.value) return;
   
+  const productStock = product.value.stock ?? 0;
+  if (productStock <= 0) {
+    showToast('El producto está fuera de stock', 'error', 2000);
+    return;
+  }
+  
+  // Validar stock antes de agregar
+  const result = cartStore.addToCart(product.value);
+  
+  if (!result.success) {
+    showToast(result.error || 'Error al agregar al carrito', 'error', 2000);
+    return;
+  }
+  
   // Animación
   isAddingToCart.value = true;
   setTimeout(() => {
     isAddingToCart.value = false;
   }, 600);
-  
-  // Agregar al carrito
-  cartStore.addToCart(product.value);
   
   // Mostrar toast
   showToast(`¡${product.value.name} agregado al carrito!`, 'success', 2000);
@@ -309,6 +327,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: space-between;
 }
 .back {
   background: #f0f0f5;
@@ -323,6 +342,21 @@ onBeforeUnmount(() => {
   background: #4247c1;
   color: #ffffff;
   border-color: #4247c1;
+}
+.edit-btn {
+  background: #30a84a;
+  color: #ffffff;
+  border: 1px solid #30a84a;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+.edit-btn:hover {
+  background: #278a3d;
+  border-color: #278a3d;
+  transform: translateY(-1px);
 }
 .back-link { color: #4247c1; text-decoration: none; }
 .container {

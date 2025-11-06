@@ -6,6 +6,7 @@ import ForumView from './views/ForumView.vue';
 import CreateProduct from './views/CreateProduct.vue';
 import ProductDetailView from './views/ProductDetailView.vue';
 import UserProfileView from './views/UserProfileView.vue';
+import NotFoundView from './views/NotFoundView.vue';
 import { useUserStore } from './stores/userStore';
 
 const routes = [
@@ -14,9 +15,11 @@ const routes = [
     { path: '/register', component: RegisterView },
     { path: '/products', component: ProductsView, meta: { requiresAuth: true } },
     { path: '/products/create', component: CreateProduct, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/products/:id/edit', component: CreateProduct, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/products/:id', component: ProductDetailView, meta: { requiresAuth: true } },
     { path: '/forum', component: ForumView, meta: { requiresAuth: true } },
     { path: '/account', component: UserProfileView, meta: { requiresAuth: true } },
+    { path: '/:pathMatch(.*)*', component: NotFoundView },
 ];
 
 const router = createRouter({

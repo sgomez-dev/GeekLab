@@ -17,7 +17,15 @@
             </div>
             <div class="cart-quantity">
               <button @click="$emit('decrease', item)">-</button>
-              <span>{{ item.quantity }}</span>
+              <input 
+                type="number" 
+                :value="item.quantity" 
+                @input="$emit('updateQuantity', item, parseInt($event.target.value) || 0)"
+                @blur="$emit('updateQuantity', item, parseInt($event.target.value) || 0)"
+                :min="0"
+                :max="item.stock ?? 0"
+                class="quantity-input"
+              />
               <button @click="$emit('increase', item)">+</button>
             </div>
           </div>
@@ -37,7 +45,7 @@ const props = defineProps({
   total: { type: Number, required: true },
 });
 
-const emit = defineEmits(['close', 'increase', 'decrease', 'checkout']);
+const emit = defineEmits(['close', 'increase', 'decrease', 'updateQuantity', 'checkout']);
 
 function onClose() {
   emit('close');
@@ -157,12 +165,48 @@ function getImageUrl(product) {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .cart-quantity button:hover {
   background: #4247c1;
   color: #ffffff;
   border-color: #4247c1;
+}
+
+.quantity-input {
+  width: 50px;
+  height: 28px;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c1c29;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: #4247c1;
+  box-shadow: 0 0 0 2px rgba(66, 71, 193, 0.1);
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .cart-total {
