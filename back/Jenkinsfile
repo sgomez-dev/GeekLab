@@ -10,12 +10,14 @@ pipeline {
     stages {
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh """
-                        pwd
-                        ls -la sonar-project.properties || echo 'sonar-project.properties not found'
-                        ${SCANNER_HOME}/bin/sonar-scanner
-                    """
+                dir('back') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh """
+                            pwd
+                            ls -la sonar-project.properties || echo 'sonar-project.properties not found'
+                            ${SCANNER_HOME}/bin/sonar-scanner
+                        """
+                    }
                 }
             }
         }
@@ -24,15 +26,17 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo '====== DEPLOYING ======'
-                sh """
-                    docker build . -f Dockerfile -t ${SERVER_REG}/${APP_NAME}:${BRANCH_NAME}-${BUILD_ID}
-                    docker login 
-                    docker push ${SERVER_REG}/${APP_NAME}:${BRANCH_NAME}-${BUILD_ID}
+                dir('back') {
+                    echo '====== DEPLOYING ======'
+                    sh """
+                        docker build . -f Dockerfile -t ${SERVER_REG}/${APP_NAME}:${BRANCH_NAME}-${BUILD_ID}
+                        docker login 
+                        docker push ${SERVER_REG}/${APP_NAME}:${BRANCH_NAME}-${BUILD_ID}
 
-                    export KUBECONFIG=/var/jenkins_home/.kube/kubeconfig.yaml
-                    kubectl set image deployment/${APP_NAME} ${APP_NAME}=${SERVER_REG}/${APP_NAME}:${BRANCH_NAME}-${BUILD_ID}
+                        export KUBECONFIG=/var/jenkins_home/.kube/kubeconfig.yaml
+                        kubectl set image deployment/${APP_NAME} ${APP_NAME}=${SERVER_REG}/${APP_NAME}:${BRANCH_NAME}-${BUILD_ID}
                     """
+                }
             }
         }
     }
