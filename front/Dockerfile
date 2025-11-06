@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build-stage
+FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files
@@ -10,15 +10,8 @@ RUN npm i
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Expose port (Vite default is 5173)
+EXPOSE 5173
 
-# Final stage - minimal image with just the built files
-FROM alpine:latest
-WORKDIR /app
-
-# Copy built files from build stage
-COPY --from=build-stage /app/dist ./dist
-
-# The built files will be in /app/dist
-# You can copy them from the container or mount as volume to your nginx server
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
