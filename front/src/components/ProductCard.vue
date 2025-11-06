@@ -92,7 +92,7 @@ const productId = computed(() => props.product._id || props.product.id || props.
 const imageUrl = computed(() => {
   if (!props.product.image) return "/placeholder.png";
   if (props.product.image.startsWith("http")) return props.product.image;
-  return `http://localhost:4000${props.product.image}`;
+  return `http://15.15.15.7:32131${props.product.image}`; // This is my local server, use localhost:4000
 });
 
 const localStock = ref(props.product.stock ?? 0);

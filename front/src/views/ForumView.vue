@@ -35,7 +35,7 @@ import api from '../api/axios';
 import { useUserStore } from '../stores/userStore';
 
 const userStore = useUserStore();
-const socket = io('http://localhost:4000');
+const socket = io('http://15.15.15.7:32131'); // This is my local server, use localhost:4000
 const messages = ref([]);
 const message = ref('');
 const sending = ref(false);

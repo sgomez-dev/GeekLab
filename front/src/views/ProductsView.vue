@@ -74,7 +74,7 @@ import ProductCard from "../components/ProductCard.vue";
 import { io } from 'socket.io-client';
 
 const products = ref([]);
-const socket = io('http://localhost:4000');
+const socket = io('http://15.15.15.7:32131'); // This is my local server, use localhost:4000
 const searchTerm = ref('');
 const selectedBrand = ref('');
 const selectedType = ref('');

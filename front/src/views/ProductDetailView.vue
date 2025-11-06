@@ -147,7 +147,7 @@ const product = ref(null);
 const loading = ref(true);
 const notFound = ref(false);
 const isAddingToCart = ref(false);
-const socket = io('http://localhost:4000');
+const socket = io('http://15.15.15.7:32131'); // This is my local server, use localhost:4000
 const newStock = ref(1);
 const stockError = ref(null);
 const isDeleting = ref(false);
@@ -163,7 +163,7 @@ const canSubmitReview = computed(() => newComment.value.trim().length > 0 && new
 const imageUrl = computed(() => {
   if (!product.value?.image) return '/placeholder.png';
   if (product.value.image.startsWith('http')) return product.value.image;
-  return `http://localhost:4000${product.value.image}`;
+  return `http://15.15.15.7:32131${product.value.image}`; // This is my local server, use localhost:4000
 });
 
 const specsList = computed(() => {
