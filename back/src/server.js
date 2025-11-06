@@ -19,7 +19,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {cors: { origin: '*' }});
-const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/GeekLab';
+const mongoUri = process.env.MONGO_URI_PROD || 'mongodb://localhost:27017/GeekLab';
 const port = process.env.PORT || 4000;
 
 // compute __dirname for ES modules
