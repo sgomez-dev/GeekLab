@@ -1,4 +1,7 @@
+let _io = null;
+
 export const setupChat = (io) => {
+    _io = io;
     io.on('connection', (socket) => {
         console.log('New client connected:', socket.id);
 
@@ -11,3 +14,5 @@ export const setupChat = (io) => {
         });
     });
 };
+
+export const getIO = () => _io;

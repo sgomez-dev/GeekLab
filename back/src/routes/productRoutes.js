@@ -11,6 +11,13 @@ router.get('/', async (req, res) => {
     res.json(products);
 })
 
+// get product by id
+router.get('/:id', async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
+    res.json(product);
+});
+
 // create product (admin only)
 router.post('/', authenticateJWT, async (req, res) => {
     if (req.user.role !== 'admin') return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied' });

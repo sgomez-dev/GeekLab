@@ -4,6 +4,8 @@ import RegisterView from './views/RegisterView.vue';
 import ProductsView from './views/ProductsView.vue';
 import ChatView from './views/ChatView.vue';
 import CreateProduct from './views/CreateProduct.vue';
+import ProductDetailView from './views/ProductDetailView.vue';
+import UserProfileView from './views/UserProfileView.vue';
 import { useUserStore } from './stores/userStore';
 
 const routes = [
@@ -12,7 +14,9 @@ const routes = [
     { path: '/register', component: RegisterView },
     { path: '/products', component: ProductsView, meta: { requiresAuth: true } },
     { path: '/products/create', component: CreateProduct, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/products/:id', component: ProductDetailView, meta: { requiresAuth: true } },
     { path: '/chat', component: ChatView, meta: { requiresAuth: true } },
+    { path: '/account', component: UserProfileView, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

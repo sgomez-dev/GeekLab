@@ -1,5 +1,8 @@
 <template>
   <div class="create-page">
+    <div class="toolbar">
+      <button class="back" @click="goBack">← Atrás</button>
+    </div>
     <h2>Crear Producto</h2>
     <form @submit.prevent="onSubmit" class="create-form">
       <label>Nombre</label>
@@ -49,6 +52,11 @@ const msg = ref(null);
 const router = useRouter();
 const userStore = useUserStore();
 
+function goBack() {
+  if (window.history.length > 1) router.back();
+  else router.push("/products");
+}
+
 function onFileChange(e) {
   const file = e.target.files[0];
   if (file) imageFile.value = file;
@@ -88,29 +96,49 @@ async function onSubmit() {
   max-width: 720px;
   margin: 2rem auto;
   padding: 1rem;
+  background: #ffffff;
 }
+h2 {
+  color: #4247c1;
+}
+.toolbar { display:flex; align-items:center; gap:12px; margin-bottom: 8px; }
+.back { background:#f0f0f5; color:#1c1c29; border:1px solid #e0e0e0; padding:8px 12px; border-radius:6px; cursor:pointer; transition: all 0.2s; }
+.back:hover { background:#4247c1; color:#ffffff; border-color:#4247c1; }
 .create-form {
   display: grid;
   gap: 0.6rem;
 }
 label {
-  color: var(--primary-color);
+  color: #4247c1;
+  font-weight: 500;
 }
 input,
 textarea {
   padding: 0.5rem;
   border-radius: 6px;
-  border: none;
-  background: #111;
-  color: #fff;
+  border: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  color: #1c1c29;
+}
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #4247c1;
+  background: #ffffff;
 }
 button {
   margin-top: 0.6rem;
   padding: 0.6rem 1rem;
   background: var(--primary-color);
-  color: #000;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+button:hover {
+  background: #3539a0;
+  transform: translateY(-1px);
 }
 .error {
   color: #ff6b6b;

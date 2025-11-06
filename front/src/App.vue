@@ -1,24 +1,47 @@
 <template>
   <div id="app">
-    <Navbar />
-    <RouterView />
+    <Navbar v-if="showNavbar" />
+    <div class="main-content" :class="{ 'no-navbar': !showNavbar }">
+      <RouterView />
+    </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import Navbar from './components/Navbar.vue';
+
+const route = useRoute();
+
+const showNavbar = computed(() => {
+  return route.path !== '/login' && route.path !== '/register';
+});
+</script>
 
 <style>
 body {
   margin: 0;
   font-family: "Roboto", "Segoe UI", sans-serif;
-  background-color: #0c0c0c;
-  color: #fff;
+  background-color: #ffffff;
+  color: #1c1c29;
 }
 
 #app {
   min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.main-content {
+  padding-top: 70px;
+}
+
+.main-content.no-navbar {
+  padding-top: 0;
 }
 
 a {
-  color: #0ff;
+  color: #4247c1;
   text-decoration: none;
 }
 

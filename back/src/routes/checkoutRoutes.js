@@ -1,24 +1,28 @@
 import express from 'express';
 import { authenticateJWT } from '../middleware/authenticateJWT.js';
 import Product from '../models/Product.js';
+import Order from '../models/Order.js';
 import StatusCodes from 'http-status-codes';
+import { getIO } from '../socket.js';
 
 const router = express.Router();
 
 router.post('/', authenticateJWT, async (req, res) => {
-    const session = await Product.startSession();
-    session.startTransaction();
-
     try {
-        const items = req.body.items;
-        const updates = [];
-        const insufficientStock = [];
+        const items = req.body.items || [];
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'No items to checkout' });
+        }
 
-        // Verificar stock disponible
+        const insufficientStock = [];
+        const orderItems = [];
+        let total = 0;
+
+        // Verificar stock disponible y preparar snapshot
         for (const item of items) {
             const product = await Product.findById(item._id);
             if (!product) {
-                throw new Error(`Producto no encontrado: ${item._id}`);
+                return res.status(StatusCodes.BAD_REQUEST).json({ message: `Producto no encontrado: ${item._id}` });
             }
             if (product.stock < item.quantity) {
                 insufficientStock.push({
@@ -26,43 +30,56 @@ router.post('/', authenticateJWT, async (req, res) => {
                     requested: item.quantity,
                     available: product.stock
                 });
+            } else {
+                orderItems.push({
+                    productId: product._id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: item.quantity,
+                });
+                total += product.price * item.quantity;
             }
         }
 
         if (insufficientStock.length > 0) {
-            await session.abortTransaction();
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: 'Stock insuficiente',
                 details: insufficientStock
             });
         }
 
-        // Actualizar stock
-        for (const item of items) {
-            updates.push(
+        // Actualizar stock y obtener nuevos valores
+        const updates = await Promise.all(
+            items.map((item) =>
                 Product.findByIdAndUpdate(
                     item._id,
                     { $inc: { stock: -item.quantity } },
-                    { session, new: true }
+                    { new: true }
                 )
-            );
+            )
+        );
+
+        // Emitir eventos de actualización de stock
+        const io = getIO();
+        if (io) {
+            updates.forEach((p) => {
+                if (p) io.emit('stock:update', { productId: String(p._id), stock: p.stock });
+            });
         }
 
-        const updatedProducts = await Promise.all(updates);
-        await session.commitTransaction();
+        // Crear la orden
+        const order = await Order.create({ userId: req.user.id, items: orderItems, total });
 
-        res.json({
+        return res.json({
             message: 'Compra realizada con éxito',
-            products: updatedProducts
+            order
         });
     } catch (error) {
-        await session.abortTransaction();
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        console.error('Checkout error:', error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Error al procesar la compra',
             error: error.message
         });
-    } finally {
-        session.endSession();
     }
 });
 

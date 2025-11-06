@@ -31,6 +31,34 @@ router.get('/', async (req, res) => {
     res.json(products);
 })
 
+// helper: list product ids and names (debug)
+router.get('/ids', async (req, res) => {
+    try {
+        const products = await Product.find({}, { name: 1 });
+        // return array of { _id, name }
+        res.json(products.map(p => ({ _id: p._id, name: p.name })));
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error fetching ids' });
+    }
+});
+
+// get product by id
+router.get('/:id', async (req, res) => {
+    try {
+        console.log(`[products] GET /:id -> id=${req.params.id}`);
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            console.log(`[products] Product not found id=${req.params.id}`);
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
+        }
+        console.log(`[products] Product found id=${req.params.id}`);
+        res.json(product);
+    } catch (error) {
+        console.error('[products] Error fetching product by id', error);
+        res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid product id' });
+    }
+});
+
 // create product (admin only)
 router.post('/', authenticateJWT, upload.single('image'), async (req, res) => {
     if (req.user.role !== 'admin') return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied' });

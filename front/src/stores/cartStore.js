@@ -1,8 +1,16 @@
 import { defineStore } from 'pinia';
+import { useUserStore } from './userStore';
+import { watch } from 'vue';
+import api from '../api/axios';
+
+function getStorageKey(userId) {
+  return userId ? `cart:${userId}` : 'cart:guest';
+}
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
-    items: JSON.parse(localStorage.getItem('cart')) || [],
+    items: [],
+    _storageKey: 'cart:guest',
   }),
 
   getters: {
@@ -11,6 +19,22 @@ export const useCartStore = defineStore('cart', {
   },
 
   actions: {
+    init() {
+      const userStore = useUserStore();
+      userStore.initFromToken?.();
+      this._storageKey = getStorageKey(userStore.user?.id);
+      this.items = JSON.parse(localStorage.getItem(this._storageKey)) || [];
+
+      // React to user changes and swap cart accordingly
+      watch(
+        () => userStore.user?.id,
+        (newId) => {
+          this._storageKey = getStorageKey(newId);
+          this.items = JSON.parse(localStorage.getItem(this._storageKey)) || [];
+        }
+      );
+    },
+
     addToCart(product) {
       const existingItem = this.items.find(item => item._id === product._id);
       if (existingItem) {
@@ -65,7 +89,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     saveCart() {
-      localStorage.setItem('cart', JSON.stringify(this.items));
+      localStorage.setItem(this._storageKey, JSON.stringify(this.items));
     }
   }
 });
