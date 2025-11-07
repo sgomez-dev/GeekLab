@@ -1,23 +1,17 @@
-# --- Stage 1: Frontend build ---
-FROM node:20-alpine AS build
+FROM node:20-alpine
 WORKDIR /app
 
-# Copy dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm ci
 
-# Copy the remaining source code and build the app
+# Install dependencies
+RUN npm i
+
+# Copy source code
 COPY . .
-RUN npm run build
 
-# --- Stage 2: Serve with Nginx ---
-FROM nginx:alpine
-
-# Copy the generated build to Nginx public directory
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy custom configuration for SPA routing
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+# Expose port (Vite default is 5173)
 EXPOSE 5173
-CMD ["nginx", "-g", "daemon off;"]
+
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
