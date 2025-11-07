@@ -30,12 +30,12 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { io } from 'socket.io-client';
+import { createSocket } from '../api/socket';
 import api from '../api/axios';
 import { useUserStore } from '../stores/userStore';
 
 const userStore = useUserStore();
-const socket = io('http://15.15.15.7:32131'); // This is my local server, use localhost:4000
+const socket = createSocket();
 const messages = ref([]);
 const message = ref('');
 const sending = ref(false);

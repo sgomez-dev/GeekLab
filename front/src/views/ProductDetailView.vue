@@ -136,7 +136,7 @@ import api from '../api/axios';
 import { useCartStore } from '../stores/cartStore';
 import { useUserStore } from '../stores/userStore';
 import { useToast } from '../composables/useToast';
-import { io } from 'socket.io-client';
+import { createSocket } from '../api/socket';
 
 const route = useRoute();
 const router = useRouter();
@@ -147,7 +147,7 @@ const product = ref(null);
 const loading = ref(true);
 const notFound = ref(false);
 const isAddingToCart = ref(false);
-const socket = io('http://15.15.15.7:32131'); // This is my local server, use localhost:4000
+const socket = createSocket();
 const newStock = ref(1);
 const stockError = ref(null);
 const isDeleting = ref(false);

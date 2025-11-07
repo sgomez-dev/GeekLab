@@ -19,7 +19,12 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' }
+  cors: {
+    origin: ['http://15.15.15.7:32136', 'http://localhost:32136', 'http://15.15.15.7:32131', 'http://localhost:4000', '*'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
 });
 
 const port = process.env.PORT || 4000;
