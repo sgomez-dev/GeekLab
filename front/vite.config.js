@@ -9,9 +9,21 @@ export default defineConfig({
     port: 32136,
     strictPort: false,
     hmr: {
-      protocol: 'ws',
-      host: '15.15.15.7',
-      port: 32136
+      // Use clientPort for Docker/containerized environments
+      // This allows Vite to detect the correct host automatically
+      clientPort: 32136,
+      // Only specify host if explicitly set via environment variable
+      host: process.env.VITE_HMR_HOST || undefined
+    },
+    watch: {
+      // Improve file watching in Docker
+      usePolling: true
     }
+  },
+  optimizeDeps: {
+    // Force re-optimization when dependencies change
+    force: process.env.VITE_FORCE_OPTIMIZE === 'true',
+    // Include common dependencies that might cause issues
+    include: ['vue', 'vue-router', 'pinia', 'axios', 'socket.io-client']
   }
 })

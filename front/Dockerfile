@@ -10,8 +10,8 @@ RUN npm i
 # Copy source code
 COPY . .
 
-# Expose port (Vite default is 5173)
-EXPOSE 5173
+# Expose port (matches vite.config.js port 32136)
+EXPOSE 32136
 
 # Start the development server
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
