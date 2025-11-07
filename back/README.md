@@ -326,6 +326,13 @@ curl -X POST http://localhost:4000/api/products/:id/reviews \
 - Rutas específicas deben ir **antes** de rutas dinámicas
 - La ruta `/products/:id/reviews` debe ir antes de `/products/:id`
 
+##  Despliegue e Infraestructura
+
+- **Orquestación CI/CD:** Automatizado con pipelines de Jenkins que ejecutan análisis de SonarQube, construyen imágenes Docker y actualizan los despliegues.
+- **Entorno de ejecución:** El backend corre como un servicio dentro de un clúster de Kubernetes, con actualizaciones continuas gestionadas mediante `kubectl set image`.
+- **Base de datos:** Se conecta a una instancia administrada de MongoDB expuesta desde un servidor externo, usando credenciales definidas por variables de entorno.
+- **Integración con el frontend:** El frontend en Vue.js se construye por separado y se sirve públicamente a través de un Nginx; consume este backend mediante los endpoints `/api`.
+
 ---
 
 

@@ -238,6 +238,13 @@ Para cambiar la URL del backend, modifica `baseURL` en `axios.js`.
 - Sanitización de inputs en formularios
 - Validación de stock en múltiples capas
 
+##  Despliegue e Infraestructura
+
+- **Orquestación CI/CD:** Jenkins ejecuta pipelines que lint-ean, prueban, construyen imágenes Docker y publican actualizaciones en el clúster.
+- **Entorno de ejecución:** Se despliega como un servicio sin estado en el mismo clúster de Kubernetes que aloja el backend.
+- **Conectividad con el backend:** Se comunica con el backend en Express que corre en Kubernetes, el cual a su vez consume una instancia de MongoDB alojada en un servidor externo.
+- **Exposición pública:** El build de producción se sirve en internet mediante Nginx, exponiendo los artefactos compilados de `dist/` en [https://geeklab.sgomez.dev](https://geeklab.sgomez.dev).
+
 ---
 
 Para más información sobre el proyecto completo, consulta el [README principal](../README.md).

@@ -386,6 +386,13 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 - Sanitización de inputs
 - Validación de stock en múltiples capas
 
+##  Despliegue e Infraestructura
+
+- **Orquestación CI/CD:** Jenkins ejecuta pipelines que analizan el código con SonarQube, construyen imágenes Docker y publican nuevas versiones en el clúster.
+- **Entorno de ejecución:** Backend y frontend corren como servicios dentro de un clúster de Kubernetes, aprovechando actualizaciones continuas y escalado.
+- **Base de datos:** Ambos servicios consumen una instancia de MongoDB alojada en un servidor externo y accesible mediante credenciales configurables.
+- **Exposición del frontend:** El build de Vue se sirve públicamente a través de Nginx, que entrega los archivos generados en `dist/`, accesibles en [https://geeklab.sgomez.dev](https://geeklab.sgomez.dev).
+
 
 ---
 
