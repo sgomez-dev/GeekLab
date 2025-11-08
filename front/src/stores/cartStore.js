@@ -11,6 +11,7 @@ export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [],
     _storageKey: 'cart:guest',
+    _initialized: false,
   }),
 
   getters: {
@@ -19,13 +20,14 @@ export const useCartStore = defineStore('cart', {
   },
 
   actions: {
-    init() {
+    _ensureInitialized() {
+      if (this._initialized) return;
+      
       const userStore = useUserStore();
       userStore.initFromToken?.();
       this._storageKey = getStorageKey(userStore.user?.id);
       this.items = JSON.parse(localStorage.getItem(this._storageKey)) || [];
 
-      // React to user changes and swap cart accordingly
       watch(
         () => userStore.user?.id,
         (newId) => {
@@ -33,9 +35,16 @@ export const useCartStore = defineStore('cart', {
           this.items = JSON.parse(localStorage.getItem(this._storageKey)) || [];
         }
       );
+      
+      this._initialized = true;
+    },
+    
+    init() {
+      this._ensureInitialized();
     },
 
     addToCart(product) {
+      this._ensureInitialized();
       const productStock = product.stock ?? 0;
       if (productStock <= 0) {
         return { success: false, error: 'El producto está fuera de stock' };
@@ -43,7 +52,6 @@ export const useCartStore = defineStore('cart', {
 
       const existingItem = this.items.find(item => item._id === product._id);
       if (existingItem) {
-        // Verificar que no exceda el stock disponible
         if (existingItem.quantity >= productStock) {
           return { success: false, error: `No hay suficiente stock. Disponible: ${productStock} unidades` };
         }
@@ -56,6 +64,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     removeFromCart(productId) {
+      this._ensureInitialized();
       const index = this.items.findIndex(item => item._id === productId);
       if (index > -1) {
         this.items.splice(index, 1);
@@ -64,6 +73,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     updateQuantity(productId, quantity) {
+      this._ensureInitialized();
       const item = this.items.find(item => item._id === productId);
       if (item) {
         const productStock = item.stock ?? 0;
@@ -80,6 +90,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     async checkout() {
+      this._ensureInitialized();
       try {
         const response = await api.post('/checkout', {
           items: this.items
@@ -98,6 +109,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     clearCart() {
+      this._ensureInitialized();
       this.items = [];
       this.saveCart();
     },
