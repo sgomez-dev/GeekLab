@@ -36,6 +36,7 @@ const __dirname = path.dirname(__filename);
 app.use(cors({
   origin: [
     'http://15.15.15.7:32136', 
+    'https://geeklab.sgomez.dev', 
     'http://localhost:32136', 
   ],
   credentials: true,

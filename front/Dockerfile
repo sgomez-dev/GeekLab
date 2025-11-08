@@ -10,6 +10,12 @@ RUN npm i
 # Copy source code
 COPY . .
 
+# Remove node_modules if it exists to ensure clean build
+RUN rm -rf node_modules
+
+# Reinstall dependencies to ensure consistency
+RUN npm i
+
 # Expose port (matches vite.config.js port 32136)
 EXPOSE 32136
 
