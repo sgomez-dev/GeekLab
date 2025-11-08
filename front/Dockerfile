@@ -13,5 +13,5 @@ COPY . .
 # Expose port (matches vite.config.js port 32136)
 EXPOSE 32136
 
-# Start the development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Start the development server with explicit port and host
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "32136"]

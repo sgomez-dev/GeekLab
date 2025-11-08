@@ -14,8 +14,8 @@ export default defineConfig({
       '15.15.15.7',
       '127.0.0.1'
     ],
-    // Increase timeouts for Kubernetes/proxy environments
-    proxy: {},
+    // Open browser automatically (disabled for containerized environments)
+    open: false,
     cors: true,
     hmr: {
       // For Kubernetes/Ingress: use environment variable or auto-detect from headers
