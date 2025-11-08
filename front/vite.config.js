@@ -18,7 +18,7 @@ export default defineConfig({
       // Use clientPort for Docker/containerized environments
       clientPort: 32136,
       // Let Vite auto-detect the host from the request headers
-      // This ensures HMR works correctly when accessed via domain
+      // This ensures HMR works correctly when accessed via domain or IP
       host: process.env.VITE_HMR_HOST || undefined,
       protocol: process.env.VITE_HMR_PROTOCOL || undefined
     },
