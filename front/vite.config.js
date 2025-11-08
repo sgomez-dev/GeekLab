@@ -8,6 +8,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 32136,
     strictPort: false,
+    allowedHosts: ['geeklab.sgomez.dev'],
     hmr: {
       // Use clientPort for Docker/containerized environments
       // This allows Vite to detect the correct host automatically
