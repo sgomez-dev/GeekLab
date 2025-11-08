@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const BACKEND_URL = 'https://geeklab-back.sgomez.dev';
+
 const api = axios.create({
     baseURL: 'https://geeklab-back.sgomez.dev/api',
 });

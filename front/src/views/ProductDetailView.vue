@@ -2,11 +2,11 @@
   <div class="product-detail">
     <div class="toolbar">
       <button class="back" @click="goBack">← Atrás</button>
-      <button v-if="isAdmin" class="edit-btn" @click="editProduct">Editar Producto</button>
+      <button v-if="isAdmin" class="edit-btn" @click="editProduct">
+        Editar Producto
+      </button>
     </div>
-    <div v-if="loading" class="container">
-      Cargando...
-    </div>
+    <div v-if="loading" class="container">Cargando...</div>
     <div v-else-if="notFound" class="container">
       <h2>Producto no encontrado</h2>
       <p>Verifica que el producto exista o vuelve al catálogo.</p>
@@ -22,33 +22,60 @@
         <p class="price">€{{ product.price?.toFixed(2) }}</p>
         <div class="rating" v-if="product.numReviews >= 0">
           <span class="stars" :title="averageRatingLabel">
-            <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.round(product.averageRating || 0) }">★</span>
+            <span
+              v-for="i in 5"
+              :key="i"
+              class="star"
+              :class="{ filled: i <= Math.round(product.averageRating || 0) }"
+              >★</span
+            >
           </span>
-          <span class="rating-text">{{ (product.averageRating || 0).toFixed(1) }} / 5 ({{ product.numReviews || 0 }})</span>
+          <span class="rating-text"
+            >{{ (product.averageRating || 0).toFixed(1) }} / 5 ({{
+              product.numReviews || 0
+            }})</span
+          >
         </div>
         <div class="stock-section">
-          <p class="stock" :class="{ 'low-stock': (product.stock ?? 0) <= 5, 'out-of-stock': (product.stock ?? 0) <= 0 }">
+          <p
+            class="stock"
+            :class="{
+              'low-stock': (product.stock ?? 0) <= 5,
+              'out-of-stock': (product.stock ?? 0) <= 0,
+            }"
+          >
             Stock disponible: {{ product.stock ?? 0 }}
           </p>
-          
+
           <!-- Admin stock management when out of stock -->
-          <div v-if="isAdmin && (product.stock ?? 0) <= 0" class="admin-stock-controls">
+          <div
+            v-if="isAdmin && (product.stock ?? 0) <= 0"
+            class="admin-stock-controls"
+          >
             <h4>Gestión de Stock (Admin)</h4>
             <div class="stock-form">
               <label for="newStock">Cantidad de stock a añadir:</label>
-              <input 
-                id="newStock" 
-                type="number" 
-                v-model.number="newStock" 
-                min="1" 
+              <input
+                id="newStock"
+                type="number"
+                v-model.number="newStock"
+                min="1"
                 placeholder="Ej: 10"
                 class="stock-input"
               />
               <div class="stock-buttons">
-                <button class="add-stock-btn" @click="addStock" :disabled="!newStock || newStock <= 0">
+                <button
+                  class="add-stock-btn"
+                  @click="addStock"
+                  :disabled="!newStock || newStock <= 0"
+                >
                   Añadir Stock
                 </button>
-                <button class="delete-product-btn" @click="confirmDelete" :disabled="isDeleting">
+                <button
+                  class="delete-product-btn"
+                  @click="confirmDelete"
+                  :disabled="isDeleting"
+                >
                   Eliminar Producto
                 </button>
               </div>
@@ -73,9 +100,9 @@
         </div>
 
         <div class="actions">
-          <button 
-            class="add-to-cart" 
-            :class="{ 'animating': isAddingToCart }"
+          <button
+            class="add-to-cart"
+            :class="{ animating: isAddingToCart }"
             @click="addToCart"
           >
             <span v-if="!isAddingToCart">Añadir al carrito</span>
@@ -83,60 +110,84 @@
           </button>
         </div>
 
-      <div class="section reviews">
-        <h3>Reseñas</h3>
-        <div v-if="(product.reviews?.length || 0) === 0" class="muted">Aún no hay reseñas.</div>
-        <ul v-else class="review-list">
-          <li v-for="r in product.reviews" :key="r._id || r.createdAt" class="review-item">
-            <div class="review-header">
-              <strong>{{ r.username }}</strong>
-              <span class="review-stars">
-                <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= r.rating }">★</span>
-              </span>
-              <span class="review-date">{{ formatDate(r.createdAt) }}</span>
-            </div>
-            <div class="review-comment">{{ r.comment }}</div>
-          </li>
-        </ul>
+        <div class="section reviews">
+          <h3>Reseñas</h3>
+          <div v-if="(product.reviews?.length || 0) === 0" class="muted">
+            Aún no hay reseñas.
+          </div>
+          <ul v-else class="review-list">
+            <li
+              v-for="r in product.reviews"
+              :key="r._id || r.createdAt"
+              class="review-item"
+            >
+              <div class="review-header">
+                <strong>{{ r.username }}</strong>
+                <span class="review-stars">
+                  <span
+                    v-for="i in 5"
+                    :key="i"
+                    class="star"
+                    :class="{ filled: i <= r.rating }"
+                    >★</span
+                  >
+                </span>
+                <span class="review-date">{{ formatDate(r.createdAt) }}</span>
+              </div>
+              <div class="review-comment">{{ r.comment }}</div>
+            </li>
+          </ul>
 
-        <div class="review-form">
-          <h4>Escribe tu reseña</h4>
-          <div class="form-row">
-            <label>Calificación</label>
-            <div class="star-rating-input">
-              <span 
-                v-for="i in 5" 
-                :key="i" 
-                class="star-input" 
-                :class="{ filled: i <= newRating, hover: i <= hoverRating }"
-                @click="newRating = i"
-                @mouseenter="hoverRating = i"
-                @mouseleave="hoverRating = 0"
-              >★</span>
-              <span class="rating-label">{{ newRating }} de 5</span>
+          <div class="review-form">
+            <h4>Escribe tu reseña</h4>
+            <div class="form-row">
+              <label>Calificación</label>
+              <div class="star-rating-input">
+                <span
+                  v-for="i in 5"
+                  :key="i"
+                  class="star-input"
+                  :class="{ filled: i <= newRating, hover: i <= hoverRating }"
+                  @click="newRating = i"
+                  @mouseenter="hoverRating = i"
+                  @mouseleave="hoverRating = 0"
+                  >★</span
+                >
+                <span class="rating-label">{{ newRating }} de 5</span>
+              </div>
             </div>
+            <div class="form-row">
+              <label for="comment">Comentario</label>
+              <textarea
+                id="comment"
+                v-model="newComment"
+                rows="3"
+                placeholder="Cuéntanos tu experiencia..."
+              ></textarea>
+            </div>
+            <button
+              class="submit-review"
+              @click="submitReview"
+              :disabled="!canSubmitReview"
+            >
+              Enviar reseña
+            </button>
+            <div v-if="reviewError" class="error">{{ reviewError }}</div>
           </div>
-          <div class="form-row">
-            <label for="comment">Comentario</label>
-            <textarea id="comment" v-model="newComment" rows="3" placeholder="Cuéntanos tu experiencia..."></textarea>
-          </div>
-          <button class="submit-review" @click="submitReview" :disabled="!canSubmitReview">Enviar reseña</button>
-          <div v-if="reviewError" class="error">{{ reviewError }}</div>
         </div>
-      </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useRoute, useRouter, RouterLink } from 'vue-router';
-import api from '../api/axios';
-import { useCartStore } from '../stores/cartStore';
-import { useUserStore } from '../stores/userStore';
-import { useToast } from '../composables/useToast';
-import { createSocket } from '../api/socket';
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRoute, useRouter, RouterLink } from "vue-router";
+import api from "../api/axios";
+import { useCartStore } from "../stores/cartStore";
+import { useUserStore } from "../stores/userStore";
+import { useToast } from "../composables/useToast";
+import { createSocket } from "../api/socket";
 
 const route = useRoute();
 const router = useRouter();
@@ -154,16 +205,24 @@ const isDeleting = ref(false);
 
 const newRating = ref(5);
 const hoverRating = ref(0);
-const newComment = ref('');
+const newComment = ref("");
 const reviewError = ref(null);
-const averageRatingLabel = computed(() => `${(product.value?.averageRating || 0).toFixed(1)} de 5`);
+const averageRatingLabel = computed(
+  () => `${(product.value?.averageRating || 0).toFixed(1)} de 5`
+);
 
-const canSubmitReview = computed(() => newComment.value.trim().length > 0 && newRating.value >= 1 && newRating.value <= 5);
+const canSubmitReview = computed(
+  () =>
+    newComment.value.trim().length > 0 &&
+    newRating.value >= 1 &&
+    newRating.value <= 5
+);
 
+const BACKEND_URL = "https://geeklab-back.sgomez.dev";
 const imageUrl = computed(() => {
-  if (!product.value?.image) return '/placeholder.png';
-  if (product.value.image.startsWith('http')) return product.value.image;
-  return `https://geeklab-back.sgomez.dev${product.value.image}`;
+  if (!product.value?.image) return "/placeholder.png";
+  if (product.value.image.startsWith("http")) return product.value.image;
+  return `${BACKEND_URL}${product.value.image}`;
 });
 
 const specsList = computed(() => {
@@ -171,16 +230,21 @@ const specsList = computed(() => {
   return specs;
 });
 
-const hasSpecs = computed(() => !!product.value && Object.keys(specsList.value).length > 0);
-const isAdmin = computed(() => userStore.user?.role === 'admin');
+const hasSpecs = computed(
+  () => !!product.value && Object.keys(specsList.value).length > 0
+);
+const isAdmin = computed(() => userStore.user?.role === "admin");
 
 function onError(e) {
-  e.target.src = '/placeholder.png';
+  // avoid infinite re-trigger: only swap once
+  if (e.target.dataset.errored) return;
+  e.target.dataset.errored = "1";
+  e.target.src = "/placeholder.png";
 }
 
 function goBack() {
   if (window.history.length > 1) router.back();
-  else router.push('/products');
+  else router.push("/products");
 }
 
 function editProduct() {
@@ -201,14 +265,14 @@ async function load() {
   notFound.value = false;
   try {
     const id = route.params.id;
-    console.log('Loading product id:', id);
+    console.log("Loading product id:", id);
     const res = await api.get(`/products/${id}`);
     product.value = res.data;
   } catch (err) {
     if (err?.response?.status === 404) {
       notFound.value = true;
     } else {
-      console.error('Error cargando producto:', err);
+      console.error("Error cargando producto:", err);
     }
   } finally {
     loading.value = false;
@@ -217,39 +281,43 @@ async function load() {
 
 function addToCart() {
   if (!product.value) return;
-  
+
   const productStock = product.value.stock ?? 0;
   if (productStock <= 0) {
-    showToast('El producto está fuera de stock', 'error', 2000);
+    showToast("El producto está fuera de stock", "error", 2000);
     return;
   }
-  
+
   // Validar stock antes de agregar
   const result = cartStore.addToCart(product.value);
-  
+
   if (!result.success) {
-    showToast(result.error || 'Error al agregar al carrito', 'error', 2000);
+    showToast(result.error || "Error al agregar al carrito", "error", 2000);
     return;
   }
-  
+
   // Animación
   isAddingToCart.value = true;
   setTimeout(() => {
     isAddingToCart.value = false;
   }, 600);
-  
+
   // Mostrar toast
-  showToast(`¡${product.value.name} agregado al carrito!`, 'success', 2000);
+  showToast(`¡${product.value.name} agregado al carrito!`, "success", 2000);
 }
 
 function formatDate(iso) {
-  try { return new Date(iso).toLocaleDateString(); } catch { return ''; }
+  try {
+    return new Date(iso).toLocaleDateString();
+  } catch {
+    return "";
+  }
 }
 
 async function submitReview() {
   reviewError.value = null;
   if (!canSubmitReview.value) {
-    reviewError.value = 'Completa la calificación y el comentario';
+    reviewError.value = "Completa la calificación y el comentario";
     return;
   }
   try {
@@ -259,18 +327,19 @@ async function submitReview() {
       comment: newComment.value.trim(),
     });
     product.value = res.data;
-    newComment.value = '';
+    newComment.value = "";
     newRating.value = 5;
-    showToast('¡Gracias por tu reseña!', 'success', 2000);
+    showToast("¡Gracias por tu reseña!", "success", 2000);
   } catch (e) {
-    reviewError.value = e?.response?.data?.message || 'Error al enviar la reseña';
+    reviewError.value =
+      e?.response?.data?.message || "Error al enviar la reseña";
   }
 }
 
 async function addStock() {
   stockError.value = null;
   if (!newStock.value || newStock.value <= 0) {
-    stockError.value = 'Ingresa una cantidad válida';
+    stockError.value = "Ingresa una cantidad válida";
     return;
   }
   try {
@@ -278,39 +347,45 @@ async function addStock() {
     const currentStock = product.value.stock || 0;
     const res = await api.put(`/products/${id}`, {
       ...product.value,
-      stock: currentStock + newStock.value
+      stock: currentStock + newStock.value,
     });
     product.value = res.data;
     newStock.value = 1;
-    showToast(`Stock actualizado: ${res.data.stock} unidades`, 'success', 2000);
+    showToast(`Stock actualizado: ${res.data.stock} unidades`, "success", 2000);
   } catch (e) {
-    stockError.value = e?.response?.data?.message || 'Error al actualizar el stock';
+    stockError.value =
+      e?.response?.data?.message || "Error al actualizar el stock";
   }
 }
 
 async function confirmDelete() {
-  if (!confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')) {
+  if (
+    !confirm(
+      "¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer."
+    )
+  ) {
     return;
   }
   isDeleting.value = true;
   try {
     const id = route.params.id;
     await api.delete(`/products/${id}`);
-    showToast('Producto eliminado correctamente', 'success', 2000);
-    router.push('/products');
+    showToast("Producto eliminado correctamente", "success", 2000);
+    router.push("/products");
   } catch (e) {
-    stockError.value = e?.response?.data?.message || 'Error al eliminar el producto';
+    stockError.value =
+      e?.response?.data?.message || "Error al eliminar el producto";
     isDeleting.value = false;
   }
 }
 
 onMounted(() => {
   load();
-  socket.on('stock:update', handleStockUpdate);
+  socket.on("stock:update", handleStockUpdate);
 });
 
 onBeforeUnmount(() => {
-  socket.off('stock:update', handleStockUpdate);
+  socket.off("stock:update", handleStockUpdate);
   socket.close();
 });
 </script>
@@ -358,7 +433,10 @@ onBeforeUnmount(() => {
   border-color: #278a3d;
   transform: translateY(-1px);
 }
-.back-link { color: #4247c1; text-decoration: none; }
+.back-link {
+  color: #4247c1;
+  text-decoration: none;
+}
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -396,15 +474,42 @@ onBeforeUnmount(() => {
   font-weight: bold;
   margin: 0 0 16px;
 }
-.rating { display:flex; align-items:center; gap:8px; margin: 6px 0 10px; }
-.stars { color: #e0e0e0; }
-.star { font-size: 18px; line-height: 1; }
-.star.filled { color: #f5b50a; }
-.rating-text { color:#1c1c29; opacity:0.8; font-size: 0.95rem; }
-.stock-section { margin: 8px 0; }
-.stock { color:#30a84a; margin: 8px 0; font-weight: 500; }
-.stock.low-stock { color: #ff6b6b; }
-.stock.out-of-stock { color: #ff6b6b; font-weight: 600; }
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+.stars {
+  color: #e0e0e0;
+}
+.star {
+  font-size: 18px;
+  line-height: 1;
+}
+.star.filled {
+  color: #f5b50a;
+}
+.rating-text {
+  color: #1c1c29;
+  opacity: 0.8;
+  font-size: 0.95rem;
+}
+.stock-section {
+  margin: 8px 0;
+}
+.stock {
+  color: #30a84a;
+  margin: 8px 0;
+  font-weight: 500;
+}
+.stock.low-stock {
+  color: #ff6b6b;
+}
+.stock.out-of-stock {
+  color: #ff6b6b;
+  font-weight: 600;
+}
 .admin-stock-controls {
   margin-top: 16px;
   padding: 16px;
@@ -438,7 +543,7 @@ onBeforeUnmount(() => {
 .stock-input:focus {
   outline: none;
   border-color: #4247c1;
-  box-shadow: 0 0 0 2px rgba(66,71,193,0.1);
+  box-shadow: 0 0 0 2px rgba(66, 71, 193, 0.1);
 }
 .stock-buttons {
   display: flex;
@@ -493,28 +598,118 @@ onBeforeUnmount(() => {
 .section {
   margin: 16px 0;
 }
-.reviews { margin-top: 24px; }
-.review-list { list-style:none; padding:0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 12px; }
-.review-item { border:1px solid #e0e0e0; border-radius:8px; padding: 12px; background:#fff; }
-.review-header { display:flex; align-items:center; gap:10px; }
-.review-stars { color:#f5b50a; margin-left: auto; }
-.review-date { color:#1c1c29; opacity:0.6; font-size:0.85rem; }
-.review-comment { margin-top: 6px; color:#1c1c29; }
-.review-form { margin-top: 16px; border-top:1px solid #e0e0e0; padding-top:12px; }
-.review-form h4 { margin: 0 0 10px; color:#4247c1; }
-.review-form .form-row { display:flex; flex-direction: column; gap:6px; margin-bottom:10px; }
-.review-form textarea { border:1px solid #1c1c29; border-radius:6px; padding:10px; background:#fff; color:#1c1c29; }
-.review-form textarea:focus { outline:none; border-color:#4247c1; box-shadow:0 0 0 2px rgba(66,71,193,0.1); }
-.star-rating-input { display: flex; align-items: center; gap: 8px; }
-.star-input { font-size: 28px; line-height: 1; color: #e0e0e0; cursor: pointer; transition: color 0.2s, transform 0.1s; user-select: none; }
-.star-input:hover { transform: scale(1.1); }
-.star-input.filled { color: #f5b50a; }
-.star-input.hover { color: #ffd700; }
-.rating-label { color: #1c1c29; opacity: 0.8; font-size: 0.95rem; margin-left: 4px; }
-.submit-review { background:#4247c1; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; transition:0.2s; }
-.submit-review:disabled { background:#cccccc; color:#666; cursor:not-allowed; }
-.submit-review:hover:not(:disabled) { background:#3539a0; transform: translateY(-1px); }
-.muted { color:#1c1c29; opacity:0.6; }
+.reviews {
+  margin-top: 24px;
+}
+.review-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.review-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.review-stars {
+  color: #f5b50a;
+  margin-left: auto;
+}
+.review-date {
+  color: #1c1c29;
+  opacity: 0.6;
+  font-size: 0.85rem;
+}
+.review-comment {
+  margin-top: 6px;
+  color: #1c1c29;
+}
+.review-form {
+  margin-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
+}
+.review-form h4 {
+  margin: 0 0 10px;
+  color: #4247c1;
+}
+.review-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.review-form textarea {
+  border: 1px solid #1c1c29;
+  border-radius: 6px;
+  padding: 10px;
+  background: #fff;
+  color: #1c1c29;
+}
+.review-form textarea:focus {
+  outline: none;
+  border-color: #4247c1;
+  box-shadow: 0 0 0 2px rgba(66, 71, 193, 0.1);
+}
+.star-rating-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.star-input {
+  font-size: 28px;
+  line-height: 1;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.1s;
+  user-select: none;
+}
+.star-input:hover {
+  transform: scale(1.1);
+}
+.star-input.filled {
+  color: #f5b50a;
+}
+.star-input.hover {
+  color: #ffd700;
+}
+.rating-label {
+  color: #1c1c29;
+  opacity: 0.8;
+  font-size: 0.95rem;
+  margin-left: 4px;
+}
+.submit-review {
+  background: #4247c1;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.submit-review:disabled {
+  background: #cccccc;
+  color: #666;
+  cursor: not-allowed;
+}
+.submit-review:hover:not(:disabled) {
+  background: #3539a0;
+  transform: translateY(-1px);
+}
+.muted {
+  color: #1c1c29;
+  opacity: 0.6;
+}
 .section h3 {
   color: #4247c1;
   margin-bottom: 8px;
