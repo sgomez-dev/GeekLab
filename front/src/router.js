@@ -27,21 +27,24 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to, from, next) => {
-    const userStore = useUserStore();
-    const requiresAuth = to.meta.requiresAuth;
+// Export a function to set up the navigation guard after Pinia is initialized
+export function setupRouterGuard() {
+    router.beforeEach((to, from, next) => {
+        const userStore = useUserStore();
+        const requiresAuth = to.meta.requiresAuth;
 
-    if (requiresAuth && !userStore.token)
-        return next({ path: '/login' });
+        if (requiresAuth && !userStore.token)
+            return next({ path: '/login' });
 
-    // protect admin-only routes
-    if (to.meta.requiresAdmin && userStore.user?.role !== 'admin')
-        return next({ path: '/products' });
+        // protect admin-only routes
+        if (to.meta.requiresAdmin && userStore.user?.role !== 'admin')
+            return next({ path: '/products' });
 
-    if ((to.path === '/login' || to.path === '/register') && userStore.token) 
-        return next({ path: '/products' });
+        if ((to.path === '/login' || to.path === '/register') && userStore.token) 
+            return next({ path: '/products' });
 
-    next();
-});
+        next();
+    });
+}
 
 export default router;

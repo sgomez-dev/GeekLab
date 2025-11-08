@@ -8,7 +8,12 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 32136,
     strictPort: false,
-    allowedHosts: ['geeklab.sgomez.dev'],
+    allowedHosts: [
+      'geeklab.sgomez.dev',
+      'localhost',
+      '15.15.15.7',
+      '127.0.0.1'
+    ],
     hmr: {
       // Use clientPort for Docker/containerized environments
       clientPort: 32136,
