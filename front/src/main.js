@@ -1,4 +1,4 @@
-import { createApp, nextTick } from 'vue'
+import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router, { setupRouterGuard } from './router'
@@ -8,18 +8,20 @@ import { useCartStore } from './stores/cartStore'
 
 const app = createApp(App);
 const pinia = createPinia();
+
+// Install Pinia first
 app.use(pinia);
 
-// Setup router guard after Pinia is initialized
+// Initialize cart store immediately after Pinia is installed
+// This ensures stores are ready before any component tries to use them
+const cart = useCartStore();
+cart.init();
+
+// Setup router guard after Pinia and stores are initialized
 setupRouterGuard();
+
+// Install router
 app.use(router);
 
-// Initialize per-user cart after pinia is ready and app is mounted
-// Use nextTick to ensure everything is fully initialized
+// Mount the app - all stores are now ready
 app.mount('#app');
-
-// Initialize cart after mount to ensure Pinia is fully active
-nextTick(() => {
-  const cart = useCartStore();
-  cart.init();
-});

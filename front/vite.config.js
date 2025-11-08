@@ -15,12 +15,12 @@ export default defineConfig({
       '127.0.0.1'
     ],
     hmr: {
-      // Use clientPort for Docker/containerized environments
-      clientPort: 32136,
-      // Let Vite auto-detect the host from the request headers
-      // This ensures HMR works correctly when accessed via domain or IP
+      // For Kubernetes/Ingress: use environment variable or auto-detect from headers
+      // Set VITE_HMR_HOST=geeklab.sgomez.dev in your deployment for domain access
       host: process.env.VITE_HMR_HOST || undefined,
-      protocol: process.env.VITE_HMR_PROTOCOL || undefined
+      protocol: process.env.VITE_HMR_PROTOCOL || undefined,
+      // Use clientPort for Docker/containerized environments
+      clientPort: process.env.VITE_HMR_CLIENT_PORT ? parseInt(process.env.VITE_HMR_CLIENT_PORT) : 32136
     },
     watch: {
       // Improve file watching in Docker
