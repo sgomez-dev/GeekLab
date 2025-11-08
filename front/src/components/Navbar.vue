@@ -114,7 +114,7 @@ function toggleCart() {
 function getImageUrl(product) {
   if (!product.image) return "/placeholder.png";
   if (product.image.startsWith("http")) return product.image;
-  return `http://15.15.15.7:32131${product.image}`; // This is my local server, use localhost:4000
+  return `https://geeklab-back.sgomez.dev${product.image}`;
 }
 
 function increaseQuantity(item) {

@@ -244,7 +244,7 @@ async function loadProduct() {
     stock.value = p.stock || 0;
     description.value = p.description || "";
     if (p.image) {
-      currentImageUrl.value = p.image.startsWith("http") ? p.image : `http://15.15.15.7:32131${p.image}`; // This is my local server, use localhost:4000
+      currentImageUrl.value = p.image.startsWith("http") ? p.image : `https://geeklab-back.sgomez.dev${p.image}`;
     }
   } catch (error) {
     console.error("Error loading product:", error);

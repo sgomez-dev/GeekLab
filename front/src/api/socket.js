@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://15.15.15.7:32131';
+const SOCKET_URL = 'https://geeklab-back.sgomez.dev';
 
 export const createSocket = () => {
     return io(SOCKET_URL, {

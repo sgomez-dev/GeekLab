@@ -163,7 +163,7 @@ const canSubmitReview = computed(() => newComment.value.trim().length > 0 && new
 const imageUrl = computed(() => {
   if (!product.value?.image) return '/placeholder.png';
   if (product.value.image.startsWith('http')) return product.value.image;
-  return `http://15.15.15.7:32131${product.value.image}`; // This is my local server, use localhost:4000
+  return `https://geeklab-back.sgomez.dev${product.value.image}`;
 });
 
 const specsList = computed(() => {
