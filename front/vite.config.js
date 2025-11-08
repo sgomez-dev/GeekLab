@@ -11,10 +11,11 @@ export default defineConfig({
     allowedHosts: ['geeklab.sgomez.dev'],
     hmr: {
       // Use clientPort for Docker/containerized environments
-      // This allows Vite to detect the correct host automatically
       clientPort: 32136,
-      // Only specify host if explicitly set via environment variable
-      host: process.env.VITE_HMR_HOST || undefined
+      // Let Vite auto-detect the host from the request headers
+      // This ensures HMR works correctly when accessed via domain
+      host: process.env.VITE_HMR_HOST || undefined,
+      protocol: process.env.VITE_HMR_PROTOCOL || undefined
     },
     watch: {
       // Improve file watching in Docker
