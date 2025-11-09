@@ -4,6 +4,7 @@ import StatusCodes from 'http-status-codes';
 import { authenticateJWT } from '../middleware/authenticateJWT.js';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 
@@ -13,6 +14,15 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, '../../uploads');
+// ensure uploads directory exists
+try {
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+        console.log(`[uploads] Created directory for multer: ${uploadsDir}`);
+    }
+} catch (e) {
+    console.error('[uploads] Failed to ensure uploads directory for multer:', e);
+}
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -74,9 +84,15 @@ router.post('/:id/reviews', authenticateJWT, async (req, res) => {
             });
         }
 
+        // Dedupe reviews by userId (keep latest)
+        const map = new Map();
+        for (const r of product.reviews) {
+            map.set(String(r.userId), r);
+        }
+        product.reviews = Array.from(map.values()).sort((a,b) => a.createdAt - b.createdAt);
         // Recalculate average and count
         product.numReviews = product.reviews.length;
-        product.averageRating = product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.numReviews;
+        product.averageRating = product.numReviews === 0 ? 0 : product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.numReviews;
 
         await product.save();
         res.status(StatusCodes.CREATED).json(product);

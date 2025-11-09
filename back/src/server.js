@@ -6,6 +6,7 @@ import Redis from 'ioredis';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import productRoutes from './routes/productRoutesUpload.js';
@@ -83,13 +84,27 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Serve uploads with CORS headers to prevent ERR_BLOCKED_BY_ORB
 // Static uploads with CORS + logging to debug ORB
 const uploadsPath = path.join(__dirname, '../uploads');
+// Ensure uploads directory exists
+try {
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+    console.log(`[uploads] Created directory: ${uploadsPath}`);
+  }
+} catch (e) {
+  console.error('[uploads] Failed to ensure uploads directory:', e);
+}
 app.use('/uploads', (req, res, next) => {
   // Log request path and referer to detect bad URLs
-  console.log(`[uploads] GET ${req.originalUrl} referer=${req.headers.referer || '-'} origin=${req.headers.origin || '-'}`);
+  const reqPath = req.path || '';
+  const fileRel = reqPath.replace(/^\/+/, '');
+  const fullPath = path.join(uploadsPath, fileRel);
+  const exists = fs.existsSync(fullPath);
+  console.log(`[uploads] GET ${req.originalUrl} -> ${exists ? 'HIT' : 'MISS'} file=${fullPath} referer=${req.headers.referer || '-'} origin=${req.headers.origin || '-'}`);
   // Allow all origins for static assets
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
   // ORB/CORP headers
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   // Cache static files
