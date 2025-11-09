@@ -18,67 +18,88 @@ npm start
 
 El servidor estará disponible en `http://localhost:4000`
 
-##  Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 back/
 ├── src/
-│   ├── config/           
-│   │   └── db.js        
-│   ├── middleware/       
-│   │   └── authenticateJWT.js 
-│   ├── models/          
-│   │   ├── Message.js  
-│   │   ├── Order.js     
-│   │   ├── Product.js  
-│   │   └── User.js    
-│   ├── routes/         
-│   │   ├── authRoutes.js   
-│   │   ├── checkoutRoutes.js   
-│   │   ├── forumRoutes.js     
-│   │   ├── orderRoutes.js      
-│   │   ├── productRoutes.js     
-│   │   └── productRoutesUpload.js 
-│   ├── server.js       
-│   └── socket.js      
-├── uploads/         
+│   ├── config/
+│   │   └── db.js
+│   ├── middleware/
+│   │   └── authenticateJWT.js
+│   ├── models/
+│   │   ├── Message.js
+│   │   ├── Order.js
+│   │   ├── Product.js
+│   │   └── User.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── checkoutRoutes.js
+│   │   ├── forumRoutes.js
+│   │   ├── orderRoutes.js
+│   │   ├── productRoutes.js
+│   │   └── productRoutesUpload.js
+│   ├── server.js
+│   └── socket.js
+├── uploads/
 └── package.json
 ```
 
-##  Tecnologías
+## Tecnologías
 
-- **Node.js** - Entorno de ejecución JavaScript
-- **Express.js 5** - Framework web
+- **Node.js 20+** - Entorno de ejecución JavaScript
+- **Express.js 5.1** - Framework web moderno
 - **MongoDB** - Base de datos NoSQL
-- **Mongoose** - ODM para MongoDB
-- **Socket.io** - Comunicación en tiempo real
-- **JWT** - Autenticación mediante tokens
-- **Multer** - Manejo de carga de archivos
-- **bcryptjs** - Encriptación de contraseñas
-- **CORS** - Habilitación de Cross-Origin Resource Sharing
+- **Mongoose 8.19** - ODM para MongoDB con validación de esquemas
+- **Socket.io 4.8** - Comunicación en tiempo real (WebSocket + polling)
+- **@socket.io/redis-adapter** - Adapter para Redis (opcional, para múltiples instancias)
+- **ioredis** - Cliente Redis (opcional)
+- **JWT (jsonwebtoken 9)** - Autenticación mediante tokens
+- **Multer 1.4.5-lts** - Manejo de carga de archivos
+- **bcryptjs 2.4** - Encriptación de contraseñas
+- **CORS 2.8** - Habilitación de Cross-Origin Resource Sharing
+- **http-status-codes** - Constantes para códigos de estado HTTP
+- **dotenv** - Gestión de variables de entorno
 
-##  Configuración
+## Configuración
 
 ### Variables de Entorno
 
 Crea un archivo `.env` en la raíz de `back/`:
 
 ```env
+# MongoDB
 MONGO_URI=mongodb://localhost:27017/GeekLab
+# O MongoDB Atlas:
+# MONGO_URI=mongodb+srv://user:password@cluster.mongodb.net/GeekLab
+
+# Puerto del servidor
 PORT=4000
-JWT_SECRET=secreto_jwt_muy_seguro_aqui
+
+# JWT Secret (¡cambiar en producción con cadena aleatoria segura!)
+JWT_SECRET=secreto_jwt_muy_seguro_cambiar_en_produccion
+
+# Redis (opcional, solo para múltiples pods/instancias)
+# REDIS_URL=redis://localhost:6379
+# O Redis Cloud:
+# REDIS_URL=redis://user:password@host:port
 ```
 
-**Importante:**
-- `MONGO_URI`: Cadena de conexión a MongoDB (local o remoto)
+**Variables importantes:**
+
+- `MONGO_URI`: Cadena de conexión a MongoDB (local, Atlas o servidor remoto)
 - `PORT`: Puerto donde correrá el servidor (default: 4000)
-- `JWT_SECRET`: Secreto para firmar tokens JWT (debe ser fuerte y único)
+- `JWT_SECRET`: Secreto para firmar tokens JWT (debe ser fuerte, único y privado)
+- `REDIS_URL` (opcional): URL de Redis para Socket.io Adapter en clúster Kubernetes
+  - Solo necesario si despliegas múltiples réplicas del backend
+  - Permite que los eventos de Socket.io se propaguen entre todos los pods
 
 ### MongoDB
 
 Asegúrate de tener MongoDB corriendo:
 
 **Local:**
+
 ```bash
 mongod
 ```
@@ -86,15 +107,17 @@ mongod
 **MongoDB Atlas:**
 Usa la cadena de conexión de tu cluster en `MONGO_URI`.
 
-##  Endpoints de la API
+## Endpoints de la API
 
 ### Autenticación (`/api/auth`)
 
 - `POST /api/auth/register` - Registro de usuario
+
   - Body: `{ username, email, password }`
   - Response: `{ message: "User registered successfully" }`
 
 - `POST /api/auth/login` - Inicio de sesión
+
   - Body: `{ email, password }`
   - Response: `{ token, username, role }`
 
@@ -105,23 +128,29 @@ Usa la cadena de conexión de tu cluster en `MONGO_URI`.
 ### Productos (`/api/products`)
 
 - `GET /api/products` - Listar todos los productos
+
   - Response: Array de productos
 
 - `GET /api/products/ids` - Listar IDs y nombres (debug)
+
   - Response: Array de `{ _id, name }`
 
 - `GET /api/products/:id` - Obtener producto por ID
+
   - Response: Objeto producto
 
 - `POST /api/products` - Crear producto (requiere admin)
+
   - Headers: `Authorization: Bearer <token>`
   - Body: FormData con `name, brand, price, description, category, stock, image`
 
 - `PUT /api/products/:id` - Actualizar producto (requiere admin)
+
   - Headers: `Authorization: Bearer <token>`
   - Body: FormData con campos a actualizar
 
 - `DELETE /api/products/:id` - Eliminar producto (requiere admin)
+
   - Headers: `Authorization: Bearer <token>`
 
 - `POST /api/products/:id/reviews` - Agregar/actualizar reseña (requiere auth)
@@ -140,6 +169,7 @@ Usa la cadena de conexión de tu cluster en `MONGO_URI`.
 ### Foro (`/api/forum`)
 
 - `GET /api/forum` - Obtener mensajes del foro
+
   - Response: Array de mensajes
 
 - `POST /api/forum` - Crear mensaje (requiere auth)
@@ -153,7 +183,7 @@ Usa la cadena de conexión de tu cluster en `MONGO_URI`.
   - Headers: `Authorization: Bearer <token>`
   - Response: Array de órdenes del usuario autenticado
 
-##  Autenticación y Autorización
+## Autenticación y Autorización
 
 ### Middleware `authenticateJWT`
 
@@ -170,12 +200,14 @@ Verifica el token JWT en el header `Authorization: Bearer <token>`.
 ### Protección de Rutas
 
 Las rutas protegidas verifican:
+
 1. Token JWT válido (middleware `authenticateJWT`)
 2. Rol de admin (si aplica): `req.user.role === 'admin'`
 
-##  Modelos de Datos
+## Modelos de Datos
 
 ### User
+
 ```javascript
 {
   username: String (único, requerido),
@@ -186,6 +218,7 @@ Las rutas protegidas verifican:
 ```
 
 ### Product
+
 ```javascript
 {
   name: String (requerido),
@@ -208,6 +241,7 @@ Las rutas protegidas verifican:
 ```
 
 ### Order
+
 ```javascript
 {
   userId: ObjectId (ref: User),
@@ -223,6 +257,7 @@ Las rutas protegidas verifican:
 ```
 
 ### Message
+
 ```javascript
 {
   userId: ObjectId (ref: User),
@@ -232,41 +267,102 @@ Las rutas protegidas verifican:
 }
 ```
 
-##  Socket.io
+## Socket.io
 
-### Eventos Emitidos
+### Configuración
 
-- `forum:message` - Nuevo mensaje en el foro
-  - Payload: `{ userId, username, content, createdAt }`
+- **Transports:** WebSocket (preferido) + polling (fallback)
+- **CORS:** Configurado para orígenes permitidos
+- **Timeouts:** ping 60s, interval 25s
+- **Redis Adapter:** Opcional para múltiples instancias (configurar con `REDIS_URL`)
 
-- `stock:update` - Actualización de stock
-  - Payload: `{ productId, stock }`
+### Eventos Emitidos por el Servidor
 
-### Eventos Escuchados
+- `forum:new` - Nuevo mensaje en el foro
 
-- `forum:message` - Clientes escuchan nuevos mensajes
+  - Payload: `{ _id, userId, username, content, createdAt }`
+  - Broadcast: Todos los clientes conectados
+  - Trigger: Cuando se crea un mensaje vía POST `/api/forum/messages`
 
-##  Manejo de Archivos
+- `stock:update` - Actualización de stock después de compra
+  - Payload: `{ productId: String, stock: Number }`
+  - Broadcast: Todos los clientes conectados
+  - Trigger: Después de un checkout exitoso
+  - Uso: Frontend actualiza el catálogo en tiempo real
+
+### Eventos Escuchados por Clientes
+
+Los clientes (frontend) deben registrar listeners para:
+
+- `connect` - Cuando se establece conexión
+- `disconnect` - Cuando se pierde conexión
+- `forum:new` - Para recibir mensajes del foro en tiempo real
+- `stock:update` - Para actualizar stock en catálogo sin recargar
+
+### Ejemplo de Uso en Cliente
+
+```javascript
+import { io } from "socket.io-client";
+
+const socket = io("https://geeklab-back.sgomez.dev", {
+  transports: ["websocket", "polling"],
+  reconnection: true,
+});
+
+socket.on("connect", () => {
+  console.log("Connected:", socket.id);
+});
+
+socket.on("forum:new", (message) => {
+  console.log("New message:", message);
+  // Agregar mensaje al array de mensajes
+});
+
+socket.on("stock:update", ({ productId, stock }) => {
+  console.log("Stock updated:", productId, stock);
+  // Actualizar stock en catálogo
+});
+```
+
+## Manejo de Archivos
 
 ### Multer Configuration
 
-- **Destino:** `back/uploads/`
+- **Destino:** `back/uploads/` (se crea automáticamente si no existe)
 - **Nombres únicos:** `timestamp-random-originalname`
-- **Ruta pública:** `/uploads/filename.jpg`
-- **Tipos aceptados:** Imágenes (validar en frontend)
+  - Ejemplo: `1699512345678-123456789-mouse.jpg`
+- **Ruta almacenada en BD:** `/uploads/filename.jpg`
+- **Límite de tamaño:** 10MB por archivo
+- **Tipos aceptados:** Todos (validar en frontend para imágenes)
 
 ### Servir Archivos Estáticos
 
-Los archivos en `uploads/` se sirven en:
+Los archivos se sirven con middleware especial que incluye:
+
+- Headers CORS para evitar bloqueos ERR_BLOCKED_BY_ORB
+- `Cross-Origin-Resource-Policy: cross-origin`
+- Headers de caché para optimizar rendimiento
+- Logging de HIT/MISS para depuración
+
+**URLs de acceso:**
+
 ```
-http://localhost:4000/uploads/filename.jpg
+http://localhost:4000/uploads/filename.jpg (desarrollo)
+https://geeklab-back.sgomez.dev/uploads/filename.jpg (producción)
 ```
 
-##  Pruebas
+### Endpoint de Diagnóstico
+
+- `GET /api/products/debug/images` - Lista productos y verifica existencia de archivos
+  - Response: `{ uploadsDir, products: [{ productId, productName, imageInDB, fullPath, exists }] }`
+  - Útil para depurar problemas de imágenes 404
+
+## Pruebas
 
 ### Pruebas Manuales con Postman/cURL
 
 #### 1. Registro
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/register \
   -H "Content-Type: application/json" \
@@ -274,6 +370,7 @@ curl -X POST http://localhost:4000/api/auth/register \
 ```
 
 #### 2. Login
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -281,11 +378,13 @@ curl -X POST http://localhost:4000/api/auth/login \
 ```
 
 #### 3. Obtener Productos
+
 ```bash
 curl http://localhost:4000/api/products
 ```
 
 #### 4. Crear Producto (requiere token admin)
+
 ```bash
 curl -X POST http://localhost:4000/api/products \
   -H "Authorization: Bearer <token>" \
@@ -299,6 +398,7 @@ curl -X POST http://localhost:4000/api/products \
 ```
 
 #### 5. Agregar Reseña
+
 ```bash
 curl -X POST http://localhost:4000/api/products/:id/reviews \
   -H "Authorization: Bearer <token>" \
@@ -306,27 +406,68 @@ curl -X POST http://localhost:4000/api/products/:id/reviews \
   -d '{"rating":5,"comment":"Excelente producto"}'
 ```
 
-##  Seguridad
+## Seguridad
 
 ### Implementado
 
--  Contraseñas hasheadas con bcryptjs (salt rounds: 10)
--  Tokens JWT con expiración (2 horas)
--  Validación de roles (admin/user)
--  Middleware de autenticación en rutas protegidas
--  Validación de stock antes de checkout
--  Sanitización básica de inputs
+- Contraseñas hasheadas con bcryptjs (salt rounds: 10)
+- Tokens JWT con expiración (2 horas)
+- Validación de roles (admin/user)
+- Middleware de autenticación en rutas protegidas
+- Validación de stock antes de checkout
+- Sanitización básica de inputs
 
-##  Notas de Desarrollo
+## Despliegue
+
+### Docker
+
+El proyecto incluye un `Dockerfile` para contenerización:
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 4000
+CMD ["node", "src/server.js"]
+```
+
+### Kubernetes
+
+Desplegado en clúster con:
+
+- Service type LoadBalancer o Ingress
+- Variables de entorno configuradas en ConfigMap/Secrets
+- Volumen persistente para `/uploads` (recomendado)
+- HorizontalPodAutoscaler para escalado automático (opcional)
+
+### CI/CD con Jenkins
+
+Pipeline incluye:
+
+1. Análisis de código con SonarQube
+2. Build de imagen Docker
+3. Push a registry
+4. Deploy a Kubernetes
+5. Health checks
+
+Ver `Jenkinsfile` para detalles completos.
+
+## Notas de Desarrollo
 
 - El proyecto usa **ES Modules** (`type: "module"`)
+- Requiere Node.js 20 o superior
+- MongoDB debe estar corriendo y accesible antes de iniciar
+- El directorio `uploads/` se crea automáticamente en el primer inicio
+- Los logs incluyen información detallada para depuración
 - **Express 5** con sintaxis moderna
 - **Mongoose** para modelado de datos
 - **Socket.io** para comunicación bidireccional
 - Rutas específicas deben ir **antes** de rutas dinámicas
 - La ruta `/products/:id/reviews` debe ir antes de `/products/:id`
 
-##  Despliegue e Infraestructura
+## Despliegue e Infraestructura
 
 - **Orquestación CI/CD:** Automatizado con pipelines de Jenkins que ejecutan análisis de SonarQube, construyen imágenes Docker y actualizan los despliegues.
 - **Entorno de ejecución:** El backend corre como un servicio dentro de un clúster de Kubernetes, con actualizaciones continuas gestionadas mediante `kubectl set image`.
@@ -335,6 +476,4 @@ curl -X POST http://localhost:4000/api/products/:id/reviews \
 
 ---
 
-
 Para más información sobre el proyecto completo, consulta el [README principal](../README.md).
-

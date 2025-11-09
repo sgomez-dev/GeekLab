@@ -2,7 +2,7 @@
 
 Frontend de la aplicación GeekLab desarrollado con Vue.js 3.
 
-##  Inicio Rápido
+## Inicio Rápido
 
 ### Instalación
 
@@ -18,17 +18,17 @@ npm run dev
 
 La aplicación estará disponible en `http://localhost:5173` (o el puerto que Vite asigne).
 
-##  Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 front/
 ├── src/
-│   ├── api/              
-│   │   └── axios.js     
-│   ├── assets/           
+│   ├── api/
+│   │   └── axios.js
+│   ├── assets/
 │   │   ├── geeklab-logo.png
-│   │   └── products.css 
-│   ├── components/      
+│   │   └── products.css
+│   ├── components/
 │   │   ├── AlertModal.vue
 │   │   ├── CartModal.vue
 │   │   ├── ChangePasswordModal.vue
@@ -36,12 +36,12 @@ front/
 │   │   ├── ProductCard.vue
 │   │   ├── Toast.vue
 │   │   └── VantaBackground.vue
-│   ├── composables/    
-│   │   └── useToast.js  
-│   ├── stores/         
-│   │   ├── cartStore.js 
-│   │   └── userStore.js 
-│   ├── views/          
+│   ├── composables/
+│   │   └── useToast.js
+│   ├── stores/
+│   │   ├── cartStore.js
+│   │   └── userStore.js
+│   ├── views/
 │   │   ├── CreateProduct.vue
 │   │   ├── ForumView.vue
 │   │   ├── LoginView.vue
@@ -50,28 +50,30 @@ front/
 │   │   ├── ProductsView.vue
 │   │   ├── RegisterView.vue
 │   │   └── UserProfileView.vue
-│   ├── App.vue          
-│   ├── main.js          
-│   ├── router.js        
-│   └── style.css        
-├── public/              
-├── index.html           
-├── vite.config.js       
+│   ├── App.vue
+│   ├── main.js
+│   ├── router.js
+│   └── style.css
+├── public/
+├── index.html
+├── vite.config.js
 └── package.json
 ```
 
-##  Tecnologías
+## Tecnologías
 
-- **Vue.js 3** - Framework JavaScript reactivo con Composition API
-- **Vue Router 4** - Sistema de enrutamiento
-- **Pinia** - Gestión de estado global
-- **Axios** - Cliente HTTP para comunicación con la API
-- **Socket.io Client** - Comunicación en tiempo real para el foro
-- **Vite** - Build tool y servidor de desarrollo
+- **Vue.js 3.5** - Framework JavaScript reactivo con Composition API
+- **Vue Router 4** - Sistema de enrutamiento con guards de navegación
+- **Pinia 3** - Gestión de estado global (reemplazo moderno de Vuex)
+- **Axios 1.13** - Cliente HTTP para comunicación con la API REST
+- **Socket.io Client 4.8** - Comunicación en tiempo real (WebSocket + polling)
+- **Vite 7** - Build tool ultrarrápido y servidor de desarrollo con HMR
+- **Vanta.js** - Efectos de fondo 3D interactivos (birds, waves, etc.)
 
-##  Características Principales
+## Características Principales
 
 ### Autenticación
+
 - Login y registro de usuarios
 - Protección de rutas mediante guards
 - Tokens JWT almacenados en localStorage
@@ -80,17 +82,24 @@ front/
 ### Gestión de Estado (Pinia)
 
 #### `userStore`
+
 - Estado del usuario autenticado
 - Token JWT
 - Funciones: login, register, logout
 - Inicialización desde localStorage
 
 #### `cartStore`
-- Items del carrito
-- Persistencia en localStorage
-- Separación por usuario (guest/user)
-- Funciones: addToCart, removeFromCart, updateQuantity, checkout
-- Validación de stock antes de agregar productos
+
+- Items del carrito (sin almacenar stock para evitar datos desactualizados)
+- Persistencia en localStorage con keys por usuario (`cart:userId` / `cart:guest`)
+- Separación automática entre usuarios y modo invitado
+- Funciones principales:
+  - `addToCart(product)` - Valida stock actual contra catálogo
+  - `removeFromCart(productId)` - Elimina item del carrito
+  - `updateQuantity(productId, quantity)` - Actualiza cantidad libremente
+  - `checkout()` - Envía compra al backend, valida stock real
+- Validación de stock solo al agregar (stock real se valida en backend)
+- Items del carrito no incluyen propiedad `stock` para prevenir desincronización
 
 ### Rutas
 
@@ -108,12 +117,14 @@ front/
 ### Componentes Principales
 
 #### `ProductCard.vue`
+
 - Muestra información básica del producto
 - Sistema de estrellas para calificación
 - Botones de admin para gestionar stock (cuando está fuera de stock)
 - Modales para agregar stock y eliminar producto
 
 #### `CartModal.vue`
+
 - Modal del carrito de compras
 - Lista de productos con imágenes
 - Control de cantidad (botones +/- e input directo)
@@ -121,12 +132,14 @@ front/
 - Total calculado automáticamente
 
 #### `Navbar.vue`
+
 - Navegación principal
 - Menú según rol de usuario
 - Icono de carrito con badge de cantidad
 - Integración con CartModal
 
 #### `ProductDetailView.vue`
+
 - Vista detallada del producto
 - Sistema de reseñas con estrellas interactivas
 - Formulario para dejar reseñas
@@ -134,6 +147,7 @@ front/
 - Botón de edición para admins
 
 #### `CreateProduct.vue`
+
 - Formulario para crear/editar productos
 - Subida de imágenes
 - Validación de formulario
@@ -160,14 +174,14 @@ front/
 - **Foro:** Actualización en tiempo real de mensajes mediante Socket.io
 - **Stock:** Actualización de stock en tiempo real (si se implementa)
 
-##  Estilos
+## Estilos
 
 - **CSS Scoped:** Cada componente tiene sus propios estilos
 - **CSS Global:** `products.css` para estilos compartidos de productos
 - **Responsive:** Diseño adaptable a diferentes tamaños de pantalla
 - **Temas:** Colores principales definidos en variables CSS
 
-##  Configuración de API
+## Configuración de API
 
 El cliente Axios está configurado en `src/api/axios.js`:
 
@@ -177,41 +191,47 @@ El cliente Axios está configurado en `src/api/axios.js`:
 
 Para cambiar la URL del backend, modifica `baseURL` en `axios.js`.
 
-##  Scripts Disponibles
+## Scripts Disponibles
 
 - `npm run dev` - Inicia servidor de desarrollo
 
-##  Pruebas
+## Pruebas
 
 ### Pruebas Manuales Recomendadas
 
 1. **Navegación:**
+
    - Verifica todas las rutas
    - Prueba la página 404
    - Verifica redirecciones
 
 2. **Autenticación:**
+
    - Registro de nuevo usuario
    - Login con credenciales válidas
    - Logout y verificación de limpieza de estado
 
 3. **Productos:**
+
    - Listado de productos
    - Vista de detalle
    - Sistema de estrellas en cards y detalle
 
 4. **Carrito:**
+
    - Agregar productos
    - Modificar cantidad (botones e input)
    - Validación de stock
    - Eliminar productos
 
 5. **Reseñas:**
+
    - Ver reseñas existentes
    - Crear nueva reseña con estrellas
    - Validación de campos
 
 6. **Admin:**
+
    - Crear producto
    - Editar producto
    - Eliminar producto
@@ -222,7 +242,7 @@ Para cambiar la URL del backend, modifica `baseURL` en `axios.js`.
    - Enviar mensaje
    - Verificación de tiempo real
 
-##  Notas de Desarrollo
+## Notas de Desarrollo
 
 - El proyecto usa **ES Modules**
 - **Composition API** de Vue 3 en todos los componentes
@@ -231,14 +251,14 @@ Para cambiar la URL del backend, modifica `baseURL` en `axios.js`.
 - **Computed properties** para valores derivados
 - **Watchers** para efectos secundarios
 
-##  Seguridad
+## Seguridad
 
 - Tokens JWT almacenados en localStorage
 - Validación de roles en el frontend (verificación adicional en backend)
 - Sanitización de inputs en formularios
 - Validación de stock en múltiples capas
 
-##  Despliegue e Infraestructura
+## Despliegue e Infraestructura
 
 - **Orquestación CI/CD:** Jenkins ejecuta pipelines que lint-ean, prueban, construyen imágenes Docker y publican actualizaciones en el clúster.
 - **Entorno de ejecución:** Se despliega como un servicio sin estado en el mismo clúster de Kubernetes que aloja el backend.
