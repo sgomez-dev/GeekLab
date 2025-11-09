@@ -68,7 +68,7 @@ function scrollToBottom() {
   });
 }
 
-// Handler simple: agrega el mensaje recibido
+// Handler para mensajes nuevos (sin deduplicación extra)
 const handleNewMessage = (msg) => {
   messages.value.push(msg);
   scrollToBottom();
@@ -90,8 +90,15 @@ async function sendMessage() {
   sending.value = true;
   try {
     const content = message.value.trim();
-    const response = await api.post("/forum/messages", { content });
-    // El mensaje llegará por broadcast; opcionalmente podrías insertar aquí también
+    console.log("[Forum] Sending message:", content);
+    const response = await api.post("/forum/messages", {
+      content,
+      socketId: socket.id,
+    });
+    console.log("[Forum] Message sent, response:", response.data);
+    // Añadir el mensaje para el emisor (el broadcast excluye al emisor)
+    messages.value.push(response.data);
+    scrollToBottom();
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
@@ -101,22 +108,34 @@ async function sendMessage() {
   }
 }
 
-// (dedupe removido)
-
 onMounted(() => {
   console.log("[Forum] Component mounted, loading messages...");
   socket.on("connect", () => {
     console.log("[Forum] Socket connected:", socket.id);
   });
+
+  // Registrar listener solo una vez
   socket.on("forum:new", handleNewMessage);
-  if (!socket.connected) socket.connect();
+  console.log('[Forum] Listener "forum:new" registrado');
+
+  // Conectar si aún no está conectado
+  if (!socket.connected) {
+    console.log("[Forum] Socket no conectado, intentando conectar...");
+    socket.connect();
+  }
+
+  // Cargar mensajes iniciales
   loadMessages();
 });
 
 onBeforeUnmount(() => {
   console.log("[Forum] Component unmounting, cleaning up...");
   socket.off("forum:new", handleNewMessage);
-  if (socket.connected) socket.disconnect();
+  // Desconectar la instancia creada por este componente
+  if (socket.connected) {
+    socket.disconnect();
+    console.log("[Forum] Socket desconectado al desmontar");
+  }
 });
 </script>
 
