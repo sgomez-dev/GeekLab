@@ -32,12 +32,12 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, nextTick } from "vue";
-import { getSocket } from "../api/socket";
+import { createSocket } from "../api/socket";
 import api from "../api/axios";
 import { useUserStore } from "../stores/userStore";
 
 const userStore = useUserStore();
-const socket = getSocket();
+const socket = createSocket();
 const messages = ref([]);
 const message = ref("");
 const sending = ref(false);
@@ -68,15 +68,10 @@ function scrollToBottom() {
   });
 }
 
-// Handler for new messages
+// Handler para mensajes nuevos (sin deduplicación extra)
 const handleNewMessage = (msg) => {
-  console.log("[Forum] New message received:", msg);
-  // Avoid duplicates
-  if (!messages.value.find((m) => m._id === msg._id)) {
-    messages.value.push(msg);
-    scrollToBottom();
-    dedupeMessages();
-  }
+  messages.value.push(msg);
+  scrollToBottom();
 };
 
 async function loadMessages() {
@@ -96,25 +91,8 @@ async function sendMessage() {
   try {
     const content = message.value.trim();
     console.log("[Forum] Sending message:", content);
-    // optimistic add
-    const tempId = `temp-${Date.now()}`;
-    const optimistic = {
-      _id: tempId,
-      username: userStore.user?.username || "Tú",
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    messages.value.push(optimistic);
-    scrollToBottom();
-
     const response = await api.post("/forum/messages", { content });
     console.log("[Forum] Message sent, response:", response.data);
-
-    // replace optimistic with real one
-    const idx = messages.value.findIndex((m) => m._id === tempId);
-    if (idx !== -1) messages.value[idx] = response.data;
-    // ensure no duplicates remain (e.g., if socket broadcast arrived first)
-    dedupeMessages();
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
@@ -124,26 +102,17 @@ async function sendMessage() {
   }
 }
 
-function dedupeMessages() {
-  const seen = new Set();
-  messages.value = messages.value.filter((m) => {
-    const id = m && m._id;
-    if (!id) return true;
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
-}
-
 onMounted(() => {
   console.log("[Forum] Component mounted, loading messages...");
-  console.log("[Forum] Socket ID:", socket.id);
-  console.log("[Forum] Socket connected:", socket.connected);
+  socket.on("connect", () => {
+    console.log("[Forum] Socket connected:", socket.id);
+  });
 
   loadMessages();
 
   // Remove any existing listener to avoid duplicates
   socket.off("forum:new", handleNewMessage);
+  socket.disconnect();
 
   // Register the event listener
   socket.on("forum:new", handleNewMessage);
