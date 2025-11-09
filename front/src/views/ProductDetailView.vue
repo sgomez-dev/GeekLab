@@ -264,6 +264,18 @@ async function load() {
     console.log("Loading product id:", id);
     const res = await api.get(`/products/${id}`);
     product.value = res.data;
+
+    // Debug: log reviews ratings
+    if (product.value.reviews && product.value.reviews.length > 0) {
+      console.log(
+        "[Reviews] Loaded reviews:",
+        product.value.reviews.map((r) => ({
+          username: r.username,
+          rating: r.rating,
+          ratingType: typeof r.rating,
+        }))
+      );
+    }
   } catch (err) {
     if (err?.response?.status === 404) {
       notFound.value = true;

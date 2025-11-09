@@ -43,6 +43,9 @@ export const useCartStore = defineStore('cart', {
 
       const existingItem = this.items.find(item => item._id === product._id);
       if (existingItem) {
+        // Actualizar el stock del item en el carrito con el stock actual del producto
+        existingItem.stock = productStock;
+        
         // Verificar que no exceda el stock disponible
         if (existingItem.quantity >= productStock) {
           return { success: false, error: `No hay suficiente stock. Disponible: ${productStock} unidades` };

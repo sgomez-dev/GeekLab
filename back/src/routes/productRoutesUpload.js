@@ -87,6 +87,29 @@ router.get('/debug/images', async (req, res) => {
     }
 });
 
+// diagnostic endpoint: check reviews and ratings
+router.get('/debug/reviews', async (req, res) => {
+    try {
+        const products = await Product.find({ 'reviews.0': { $exists: true } }, { name: 1, reviews: 1, averageRating: 1, numReviews: 1 });
+        const results = products.map(p => ({
+            productId: p._id,
+            productName: p.name,
+            numReviews: p.numReviews,
+            averageRating: p.averageRating,
+            reviews: p.reviews.map(r => ({
+                username: r.username,
+                rating: r.rating,
+                ratingType: typeof r.rating,
+                comment: r.comment.substring(0, 50) + '...'
+            }))
+        }));
+        res.json(results);
+    } catch (error) {
+        console.error('[debug] Error checking reviews', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error checking reviews' });
+    }
+});
+
 // add or update a review for a product (authenticated users) - MUST be before /:id route
 router.post('/:id/reviews', authenticateJWT, async (req, res) => {
     try {
@@ -95,20 +118,28 @@ router.post('/:id/reviews', authenticateJWT, async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Rating and comment are required' });
         }
 
+        // Convertir rating a número y validar
+        const numRating = Number(rating);
+        if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Rating must be between 1 and 5' });
+        }
+
+        console.log('[Review] User', req.user.username, 'adding review with rating:', numRating, 'for product', req.params.id);
+
         const product = await Product.findById(req.params.id);
         if (!product) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
 
         // Check if user already reviewed
         const existingIndex = product.reviews.findIndex(r => r.userId?.toString() === req.user.id);
         if (existingIndex !== -1) {
-            product.reviews[existingIndex].rating = rating;
+            product.reviews[existingIndex].rating = numRating;
             product.reviews[existingIndex].comment = comment;
             product.reviews[existingIndex].createdAt = new Date();
         } else {
             product.reviews.push({
                 userId: req.user.id,
                 username: req.user.username || 'Usuario',
-                rating,
+                rating: numRating,
                 comment,
             });
         }
@@ -124,6 +155,10 @@ router.post('/:id/reviews', authenticateJWT, async (req, res) => {
         product.averageRating = product.numReviews === 0 ? 0 : product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.numReviews;
 
         await product.save();
+        
+        console.log('[Review] Saved successfully. Total reviews:', product.numReviews, 'Average:', product.averageRating);
+        console.log('[Review] Latest review ratings:', product.reviews.map(r => ({ user: r.username, rating: r.rating })));
+        
         res.status(StatusCodes.CREATED).json(product);
     } catch (error) {
         console.error('Error adding review', error);
