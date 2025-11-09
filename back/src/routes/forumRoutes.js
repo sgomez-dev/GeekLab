@@ -17,6 +17,7 @@ router.post('/messages', authenticateJWT, async (req, res) => {
     try {
         const content = (req.body?.content || '').trim();
         if (!content) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Content is required' });
+        const senderSocketId = req.body?.socketId;
 
         const msg = await Message.create({
             userId: req.user.id,
@@ -25,17 +26,22 @@ router.post('/messages', authenticateJWT, async (req, res) => {
         });
 
         const plain = msg.toObject({ versionKey: false });
-        console.log('[Forum] Message created:', plain._id, 'by', plain.username);
+        console.log('[Forum] Message created:', plain._id, 'by', plain.username, 'socketId=', senderSocketId || '-');
 
         const io = getIO();
         if (io) {
-            console.log('[Forum] Broadcasting forum:new');
-            io.emit('forum:new', plain);
+            const clients = io.engine?.clientsCount ?? 'unknown';
+            if (senderSocketId) {
+                console.log('[Forum] Broadcasting forum:new to others (excluding', senderSocketId, ') total clients:', clients);
+                io.except(senderSocketId).emit('forum:new', plain);
+            } else {
+                console.log('[Forum] Broadcasting forum:new to all clients:', clients);
+                io.emit('forum:new', plain);
+            }
         } else {
             console.error('[Forum] IO instance not available for broadcast');
         }
 
-        // Immediate response with plain object
         res.status(StatusCodes.CREATED).json(plain);
     } catch (error) {
         console.error('[Forum] Error creating message:', error);

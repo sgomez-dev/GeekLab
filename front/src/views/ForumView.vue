@@ -75,6 +75,7 @@ const handleNewMessage = (msg) => {
   if (!messages.value.find((m) => m._id === msg._id)) {
     messages.value.push(msg);
     scrollToBottom();
+    dedupeMessages();
   }
 };
 
@@ -112,6 +113,8 @@ async function sendMessage() {
     // replace optimistic with real one
     const idx = messages.value.findIndex((m) => m._id === tempId);
     if (idx !== -1) messages.value[idx] = response.data;
+    // ensure no duplicates remain (e.g., if socket broadcast arrived first)
+    dedupeMessages();
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
@@ -119,6 +122,17 @@ async function sendMessage() {
   } finally {
     sending.value = false;
   }
+}
+
+function dedupeMessages() {
+  const seen = new Set();
+  messages.value = messages.value.filter((m) => {
+    const id = m && m._id;
+    if (!id) return true;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
 }
 
 onMounted(() => {
