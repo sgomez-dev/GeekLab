@@ -68,10 +68,14 @@ function scrollToBottom() {
   });
 }
 
-// Handler para mensajes nuevos (sin deduplicación extra)
+// Handler para mensajes nuevos (con deduplicación)
 const handleNewMessage = (msg) => {
-  messages.value.push(msg);
-  scrollToBottom();
+  // Evitar duplicados por _id
+  if (!messages.value.find((m) => m._id === msg._id)) {
+    messages.value.push(msg);
+    dedupeMessages();
+    scrollToBottom();
+  }
 };
 
 async function loadMessages() {
@@ -88,24 +92,52 @@ async function loadMessages() {
 async function sendMessage() {
   if (!canSend.value || sending.value) return;
   sending.value = true;
+  const content = message.value.trim();
+  const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const optimistic = {
+    _id: tempId,
+    username: userStore.user?.username || "Tú",
+    content,
+    createdAt: new Date().toISOString(),
+    _temp: true,
+  };
+  messages.value.push(optimistic);
+  scrollToBottom();
   try {
-    const content = message.value.trim();
-    console.log("[Forum] Sending message:", content);
     const response = await api.post("/forum/messages", {
       content,
       socketId: socket.id,
     });
     console.log("[Forum] Message sent, response:", response.data);
-    // Añadir el mensaje para el emisor (el broadcast excluye al emisor)
-    messages.value.push(response.data);
-    scrollToBottom();
+    const idx = messages.value.findIndex((m) => m._id === tempId);
+    if (idx !== -1) {
+      messages.value[idx] = response.data;
+    } else if (!messages.value.find((m) => m._id === response.data._id)) {
+      messages.value.push(response.data);
+    }
+    dedupeMessages();
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
+    // Marcar optimista como error para posible reintento
+    const idx = messages.value.findIndex((m) => m._id === tempId);
+    if (idx !== -1) messages.value[idx]._error = true;
     alert(e?.response?.data?.message || "Error publicando el mensaje");
   } finally {
     sending.value = false;
+    scrollToBottom();
   }
+}
+
+function dedupeMessages() {
+  const seen = new Set();
+  messages.value = messages.value.filter((m) => {
+    const id = m && m._id;
+    if (!id) return true;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
 }
 
 onMounted(() => {
