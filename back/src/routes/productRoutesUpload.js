@@ -58,6 +58,35 @@ router.get('/ids', async (req, res) => {
     }
 });
 
+// diagnostic endpoint: check image files
+router.get('/debug/images', async (req, res) => {
+    try {
+        const products = await Product.find({}, { name: 1, image: 1 });
+        const results = products.map(p => {
+            let imagePath = p.image || '';
+            if (imagePath.startsWith('/uploads/')) {
+                imagePath = imagePath.replace('/uploads/', '');
+            }
+            const fullPath = path.join(uploadsDir, imagePath);
+            const exists = fs.existsSync(fullPath);
+            return {
+                productId: p._id,
+                productName: p.name,
+                imageInDB: p.image,
+                fullPath: fullPath,
+                exists: exists
+            };
+        });
+        res.json({
+            uploadsDir: uploadsDir,
+            products: results
+        });
+    } catch (error) {
+        console.error('[debug] Error checking images', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error checking images' });
+    }
+});
+
 // add or update a review for a product (authenticated users) - MUST be before /:id route
 router.post('/:id/reviews', authenticateJWT, async (req, res) => {
     try {

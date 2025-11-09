@@ -68,8 +68,13 @@ function scrollToBottom() {
   });
 }
 
-// Handler para mensajes nuevos (sin deduplicación extra)
+// Handler para mensajes nuevos con deduplicación por _id
 const handleNewMessage = (msg) => {
+  // Evitar duplicados si ya existe un mensaje con el mismo _id
+  if (messages.value.some((m) => m._id === msg._id)) {
+    console.log("[Forum] Mensaje duplicado ignorado:", msg._id);
+    return;
+  }
   messages.value.push(msg);
   scrollToBottom();
 };
@@ -91,14 +96,8 @@ async function sendMessage() {
   try {
     const content = message.value.trim();
     console.log("[Forum] Sending message:", content);
-    const response = await api.post("/forum/messages", {
-      content,
-      socketId: socket.id,
-    });
-    console.log("[Forum] Message sent, response:", response.data);
-    // Añadir el mensaje para el emisor (el broadcast excluye al emisor)
-    messages.value.push(response.data);
-    scrollToBottom();
+    await api.post("/forum/messages", { content });
+    console.log("[Forum] Message sent successfully");
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);

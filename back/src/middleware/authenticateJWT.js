@@ -8,12 +8,9 @@ export const authenticateJWT = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // must include at least id, username, role in payload
+        req.user = decoded;
         next();
     } catch (error) {
-        if (error.name === 'TokenExpiredError') {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token expired' });
-        }
-        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid token' });
+        res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid token' });
     }
 };
