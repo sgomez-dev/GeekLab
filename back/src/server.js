@@ -1,6 +1,8 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
+import Redis from 'ioredis';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -42,6 +44,24 @@ const io = new Server(server, {
 const port = process.env.PORT || 4000;
 
 console.log('[Socket.IO] Configured with CORS origins:', allowedOrigins);
+
+// Optional Redis adapter for multi-pod broadcast
+const redisUrl = process.env.REDIS_URL || process.env.REDIS_URI;
+if (redisUrl) {
+  try {
+    const pubClient = new Redis(redisUrl);
+    const subClient = pubClient.duplicate();
+    pubClient.on('error', (e) => console.error('[Socket.IO][Redis] Pub error', e));
+    subClient.on('error', (e) => console.error('[Socket.IO][Redis] Sub error', e));
+    Promise.all([pubClient.connect?.(), subClient.connect?.()]).catch(() => {/* ioredis v4 compatibility */});
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log('[Socket.IO] Redis adapter enabled');
+  } catch (e) {
+    console.error('[Socket.IO] Failed to enable Redis adapter:', e.message);
+  }
+} else {
+  console.log('[Socket.IO] Redis adapter not configured (set REDIS_URL to enable)');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

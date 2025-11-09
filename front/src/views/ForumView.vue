@@ -91,8 +91,14 @@ async function sendMessage() {
   try {
     const content = message.value.trim();
     console.log("[Forum] Sending message:", content);
-    const response = await api.post("/forum/messages", { content });
+    const response = await api.post("/forum/messages", {
+      content,
+      socketId: socket.id,
+    });
     console.log("[Forum] Message sent, response:", response.data);
+    // Añadir el mensaje para el emisor (el broadcast excluye al emisor)
+    messages.value.push(response.data);
+    scrollToBottom();
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
