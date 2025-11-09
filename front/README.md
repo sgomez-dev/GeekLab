@@ -183,13 +183,34 @@ front/
 
 ## Configuración de API
 
-El cliente Axios está configurado en `src/api/axios.js`:
+### Axios (`src/api/axios.js`)
 
-- Base URL: `http://localhost:4000/api`
-- Interceptor para añadir token JWT automáticamente
-- Headers de autorización en todas las peticiones autenticadas
+El cliente HTTP está configurado con:
 
-Para cambiar la URL del backend, modifica `baseURL` en `axios.js`.
+- **Base URL:** Se detecta automáticamente según el entorno
+  - Desarrollo: `http://localhost:4000/api`
+  - Producción: `https://geeklab-back.sgomez.dev/api`
+- **Interceptor de Request:** Añade token JWT automáticamente en header `Authorization`
+- **Headers:** `Authorization: Bearer <token>` en peticiones autenticadas
+
+### Socket.io (`src/api/socket.js`)
+
+Configuración de WebSocket para tiempo real:
+
+- **URL:** `https://geeklab-back.sgomez.dev` (producción)
+- **Transports:** `['websocket', 'polling']` - WebSocket preferido, polling como fallback
+- **Reconnection:** Habilitado con 5 intentos y delay de 1 segundo
+- **Timeout:** 20 segundos
+- **Factory:** `createSocket()` crea nuevas instancias por componente
+
+### URLs de Imágenes (`src/api/urls.js`)
+
+Helper para construir URLs de imágenes correctamente:
+
+- Detecta hostname automáticamente
+- Construye URLs absolutas para imágenes de productos
+- Normaliza rutas para evitar dobles barras
+- Función: `buildImageUrl(image)` exportada para uso en componentes
 
 ## Scripts Disponibles
 
@@ -238,17 +259,58 @@ Para cambiar la URL del backend, modifica `baseURL` en `axios.js`.
    - Gestionar stock desde cards
 
 7. **Foro:**
-   - Ver mensajes
+
+   - Ver mensajes históricos
    - Enviar mensaje
-   - Verificación de tiempo real
+   - Verificación de tiempo real con múltiples navegadores
+   - Deduplicación automática de mensajes
+
+8. **Actualizaciones en Tiempo Real:**
+   - Abrir catálogo en múltiples navegadores
+   - Hacer checkout desde uno
+   - Verificar actualización automática del stock en el otro
+
+## Despliegue
+
+### Despliegue con Docker
+
+El proyecto incluye `Dockerfile` y `nginx.conf`:
+
+```dockerfile
+FROM node:20-alpine as build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+```
+
+### Despliegue en Producción
+
+Actualmente desplegado en:
+
+- **URL:** [https://geeklab.sgomez.dev](https://geeklab.sgomez.dev)
+- **Servidor:** Nginx en clúster Kubernetes
+- **CI/CD:** Jenkins con pipeline automatizado
+- **SSL:** Let's Encrypt con renovación automática
+- **CDN:** Potencial para assets estáticos (futuro)
 
 ## Notas de Desarrollo
 
-- El proyecto usa **ES Modules**
+- El proyecto usa **ES Modules** y Vite
 - **Composition API** de Vue 3 en todos los componentes
-- **Script Setup** para sintaxis más limpia
-- **Reactive refs** para estado local
-- **Computed properties** para valores derivados
+- **Script Setup** (`<script setup>`) para sintaxis más limpia
+- **Reactive refs** (`ref()`) para estado local reactivo
+- **Computed properties** (`computed()`) para valores derivados
+- **Watch** para reactividad a cambios de estado
+- **Teleport** para modales renderizados en body
+- **Socket.io** con manejo de lifecycle en `onMounted`/`onBeforeUnmount`
+- **Deduplicación** de mensajes del foro por `_id` para evitar duplicados
 - **Watchers** para efectos secundarios
 
 ## Seguridad
