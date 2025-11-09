@@ -135,6 +135,7 @@ import { RouterLink } from "vue-router";
 import { useToast } from "../composables/useToast";
 import { useUserStore } from "../stores/userStore";
 import api from "../api/axios";
+import { buildImageUrl } from "../api/urls";
 
 const props = defineProps({
   product: { type: Object, required: true },
@@ -149,12 +150,7 @@ const productId = computed(
   () => props.product._id || props.product.id || props.product.productId
 );
 
-const BACKEND_URL = "https://geeklab-back.sgomez.dev";
-const imageUrl = computed(() => {
-  if (!props.product.image) return "/placeholder.png";
-  if (props.product.image.startsWith("http")) return props.product.image;
-  return `${BACKEND_URL}${props.product.image}`;
-});
+const imageUrl = computed(() => buildImageUrl(props.product.image));
 
 const localStock = ref(props.product.stock ?? 0);
 watch(

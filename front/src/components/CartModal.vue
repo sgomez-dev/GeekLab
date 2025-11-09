@@ -7,7 +7,9 @@
           <button class="close-btn" @click="onClose">✕</button>
         </header>
 
-        <div v-if="items.length === 0" class="empty-cart">El carrito está vacío</div>
+        <div v-if="items.length === 0" class="empty-cart">
+          El carrito está vacío
+        </div>
         <div v-else>
           <div v-for="item in items" :key="item._id" class="cart-item">
             <img :src="getImageUrl(item)" :alt="item.name" />
@@ -17,11 +19,23 @@
             </div>
             <div class="cart-quantity">
               <button @click="$emit('decrease', item)">-</button>
-              <input 
-                type="number" 
-                :value="item.quantity" 
-                @input="$emit('updateQuantity', item, parseInt($event.target.value) || 0)"
-                @blur="$emit('updateQuantity', item, parseInt($event.target.value) || 0)"
+              <input
+                type="number"
+                :value="item.quantity"
+                @input="
+                  $emit(
+                    'updateQuantity',
+                    item,
+                    parseInt($event.target.value) || 0
+                  )
+                "
+                @blur="
+                  $emit(
+                    'updateQuantity',
+                    item,
+                    parseInt($event.target.value) || 0
+                  )
+                "
                 :min="0"
                 :max="item.stock ?? 0"
                 class="quantity-input"
@@ -30,7 +44,9 @@
             </div>
           </div>
           <div class="cart-total">Total: €{{ total.toFixed(2) }}</div>
-          <button class="checkout-button" @click="$emit('checkout')">Proceder al pago</button>
+          <button class="checkout-button" @click="$emit('checkout')">
+            Proceder al pago
+          </button>
         </div>
       </div>
     </div>
@@ -38,23 +54,30 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits } from "vue";
 
 const props = defineProps({
   items: { type: Array, required: true },
   total: { type: Number, required: true },
 });
 
-const emit = defineEmits(['close', 'increase', 'decrease', 'updateQuantity', 'checkout']);
+const emit = defineEmits([
+  "close",
+  "increase",
+  "decrease",
+  "updateQuantity",
+  "checkout",
+]);
+import { buildImageUrl } from "../api/urls";
 
 function onClose() {
-  emit('close');
+  emit("close");
 }
 
 function getImageUrl(product) {
-  if (!product.image) return '/placeholder.png';
-  if (product.image.startsWith('http')) return product.image;
-  return `https://geeklab-back.sgomez.dev${product.image}`;
+  if (!product.image) return "/placeholder.png";
+  if (product.image.startsWith("http")) return product.image;
+  return buildImageUrl(product.image);
 }
 </script>
 
@@ -78,7 +101,7 @@ function getImageUrl(product) {
   max-height: 85vh;
   overflow: auto;
   padding: 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
@@ -204,7 +227,7 @@ function getImageUrl(product) {
   margin: 0;
 }
 
-.quantity-input[type=number] {
+.quantity-input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }

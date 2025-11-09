@@ -184,6 +184,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter, RouterLink } from "vue-router";
 import api from "../api/axios";
+import { buildImageUrl } from "../api/urls";
 import { useCartStore } from "../stores/cartStore";
 import { useUserStore } from "../stores/userStore";
 import { useToast } from "../composables/useToast";
@@ -218,12 +219,7 @@ const canSubmitReview = computed(
     newRating.value <= 5
 );
 
-const BACKEND_URL = "https://geeklab-back.sgomez.dev";
-const imageUrl = computed(() => {
-  if (!product.value?.image) return "/placeholder.png";
-  if (product.value.image.startsWith("http")) return product.value.image;
-  return `${BACKEND_URL}${product.value.image}`;
-});
+const imageUrl = computed(() => buildImageUrl(product.value?.image));
 
 const specsList = computed(() => {
   const specs = product.value?.specifications || product.value?.specs || {};
