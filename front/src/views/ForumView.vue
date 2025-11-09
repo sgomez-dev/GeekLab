@@ -70,14 +70,23 @@ function scrollToBottom() {
 
 // Handler for new messages
 const handleNewMessage = (msg) => {
-  messages.value.push(msg);
-  scrollToBottom();
+  console.log("[Forum] New message received:", msg);
+  // Avoid duplicates
+  if (!messages.value.find((m) => m._id === msg._id)) {
+    messages.value.push(msg);
+    scrollToBottom();
+  }
 };
 
 async function loadMessages() {
-  const res = await api.get("/forum/messages");
-  messages.value = res.data;
-  scrollToBottom();
+  try {
+    const res = await api.get("/forum/messages");
+    messages.value = res.data;
+    scrollToBottom();
+    console.log("[Forum] Loaded", messages.value.length, "messages");
+  } catch (error) {
+    console.error("[Forum] Error loading messages:", error);
+  }
 }
 
 async function sendMessage() {
@@ -85,9 +94,16 @@ async function sendMessage() {
   sending.value = true;
   try {
     const content = message.value.trim();
-    await api.post("/forum/messages", { content });
+    console.log("[Forum] Sending message:", content);
+    const response = await api.post("/forum/messages", { content });
+    console.log("[Forum] Message sent, response:", response.data);
     message.value = "";
-    // our own message will arrive via socket broadcast as well
+
+    // Add message immediately if socket is not working
+    if (!socket.connected) {
+      console.warn("[Forum] Socket not connected, adding message manually");
+      handleNewMessage(response.data);
+    }
   } catch (e) {
     console.error("Error posting message", e);
     alert(e?.response?.data?.message || "Error publicando el mensaje");
@@ -98,14 +114,23 @@ async function sendMessage() {
 
 onMounted(() => {
   console.log("[Forum] Component mounted, loading messages...");
-  console.log(
-    "[Forum] Socket status:",
-    socket.connected ? "Connected" : "Disconnected"
-  );
+  console.log("[Forum] Socket ID:", socket.id);
+  console.log("[Forum] Socket connected:", socket.connected);
+
   loadMessages();
+
+  // Remove any existing listener to avoid duplicates
+  socket.off("forum:new", handleNewMessage);
+
   // Register the event listener
   socket.on("forum:new", handleNewMessage);
   console.log('[Forum] Event listener registered for "forum:new"');
+
+  // If socket is not connected, try to connect
+  if (!socket.connected) {
+    console.log("[Forum] Socket not connected, attempting to connect...");
+    socket.connect();
+  }
 });
 
 onBeforeUnmount(() => {
