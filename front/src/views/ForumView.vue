@@ -108,27 +108,28 @@ onMounted(() => {
     console.log("[Forum] Socket connected:", socket.id);
   });
 
-  loadMessages();
-
-  // Remove any existing listener to avoid duplicates
-  socket.off("forum:new", handleNewMessage);
-  socket.disconnect();
-
-  // Register the event listener
+  // Registrar listener solo una vez
   socket.on("forum:new", handleNewMessage);
-  console.log('[Forum] Event listener registered for "forum:new"');
+  console.log('[Forum] Listener "forum:new" registrado');
 
-  // If socket is not connected, try to connect
+  // Conectar si aún no está conectado
   if (!socket.connected) {
-    console.log("[Forum] Socket not connected, attempting to connect...");
+    console.log("[Forum] Socket no conectado, intentando conectar...");
     socket.connect();
   }
+
+  // Cargar mensajes iniciales
+  loadMessages();
 });
 
 onBeforeUnmount(() => {
   console.log("[Forum] Component unmounting, cleaning up...");
-  // Clean up: remove the event listener when component is destroyed
   socket.off("forum:new", handleNewMessage);
+  // Desconectar la instancia creada por este componente
+  if (socket.connected) {
+    socket.disconnect();
+    console.log("[Forum] Socket desconectado al desmontar");
+  }
 });
 </script>
 
