@@ -1,16 +1,23 @@
 let _io = null;
+let connectedClients = 0;
 
 export const setupForum = (io) => {
     _io = io;
     io.on('connection', (socket) => {
-        console.log('New client connected:', socket.id);
+        connectedClients++;
+        console.log(`Client connected: ${socket.id} (Total: ${connectedClients})`);
 
         socket.on('forumMessage', (msg) => {
             io.emit('forumMessage', msg);
         });
 
-        socket.on('disconnect', () => {
-            console.log('Client disconnected:', socket.id);
+        socket.on('disconnect', (reason) => {
+            connectedClients--;
+            console.log(`Client disconnected: ${socket.id} (Reason: ${reason}, Total: ${connectedClients})`);
+        });
+
+        socket.on('error', (error) => {
+            console.error(`Socket error for ${socket.id}:`, error);
         });
     });
 };
