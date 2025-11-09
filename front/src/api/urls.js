@@ -14,30 +14,28 @@ const getBackendUrl = () => {
   return 'http://15.15.15.7:32131';
 };
 
-const BACKEND_URL = getBackendUrl();
+let BACKEND_URL = getBackendUrl();
+// Normalize trailing slash removal
+BACKEND_URL = BACKEND_URL.replace(/\/$/, '');
 
 export function buildImageUrl(image) {
   if (!image) return '/placeholder.png';
-  
-  if (/^https?:\/\//i.test(image)) return image;
-  if (/^data:/i.test(image)) return image;
 
-  const trimmed = String(image).trim();
-  if (!trimmed) return '/placeholder.png';
+  let val = String(image).trim();
+  if (!val) return '/placeholder.png';
 
-  if (trimmed.startsWith('/uploads/')) {
-    return `${BACKEND_URL}${trimmed}`;
+  if (/^https?:\/\//i.test(val) || /^data:/i.test(val)) return val;
+
+  val = val.replace(/^\/+/, '/');
+
+  if (!val.startsWith('/uploads/') && !val.startsWith('/')) {
+    val = '/uploads/' + val;
   }
 
-  if (trimmed.startsWith('uploads/')) {
-    return `${BACKEND_URL}/${trimmed}`;
-  }
+  if (!val.startsWith('/')) val = '/' + val;
 
-  if (trimmed.startsWith('/')) {
-    return `${BACKEND_URL}${trimmed}`;
-  }
-
-  return `${BACKEND_URL}/uploads/${trimmed}`;
+  const url = BACKEND_URL + val;
+  return url.replace(/([^:]\/)\/+/, '$1/'); 
 }
 
 export default buildImageUrl;

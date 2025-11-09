@@ -95,15 +95,24 @@ async function sendMessage() {
   try {
     const content = message.value.trim();
     console.log("[Forum] Sending message:", content);
+    // optimistic add
+    const tempId = `temp-${Date.now()}`;
+    const optimistic = {
+      _id: tempId,
+      username: userStore.user?.username || "Tú",
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    messages.value.push(optimistic);
+    scrollToBottom();
+
     const response = await api.post("/forum/messages", { content });
     console.log("[Forum] Message sent, response:", response.data);
-    message.value = "";
 
-    // Add message immediately if socket is not working
-    if (!socket.connected) {
-      console.warn("[Forum] Socket not connected, adding message manually");
-      handleNewMessage(response.data);
-    }
+    // replace optimistic with real one
+    const idx = messages.value.findIndex((m) => m._id === tempId);
+    if (idx !== -1) messages.value[idx] = response.data;
+    message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
     alert(e?.response?.data?.message || "Error publicando el mensaje");

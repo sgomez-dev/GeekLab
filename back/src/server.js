@@ -61,12 +61,30 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve uploads with CORS headers to prevent ERR_BLOCKED_BY_ORB
+// Static uploads with CORS + logging to debug ORB
+const uploadsPath = path.join(__dirname, '../uploads');
 app.use('/uploads', (req, res, next) => {
+  // Log request path and referer to detect bad URLs
+  console.log(`[uploads] GET ${req.originalUrl} referer=${req.headers.referer || '-'} origin=${req.headers.origin || '-'}`);
+  // Allow all origins for static assets
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  // ORB/CORP headers
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  // Cache static files
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
   next();
-}, express.static(path.join(__dirname, '../uploads')));
+}, express.static(uploadsPath, { fallthrough: true }));
+
+// 404 handler for missing files under /uploads to make it explicit
+app.use('/uploads', (req, res) => {
+  console.warn(`[uploads] 404 Not Found: ${req.originalUrl}`);
+  res.status(404).send('Not Found');
+});
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
