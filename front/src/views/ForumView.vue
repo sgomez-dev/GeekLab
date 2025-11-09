@@ -68,14 +68,10 @@ function scrollToBottom() {
   });
 }
 
-// Handler para mensajes nuevos (con deduplicación)
+// Handler simple: agrega el mensaje recibido
 const handleNewMessage = (msg) => {
-  // Evitar duplicados por _id
-  if (!messages.value.find((m) => m._id === msg._id)) {
-    messages.value.push(msg);
-    dedupeMessages();
-    scrollToBottom();
-  }
+  messages.value.push(msg);
+  scrollToBottom();
 };
 
 async function loadMessages() {
@@ -92,82 +88,35 @@ async function loadMessages() {
 async function sendMessage() {
   if (!canSend.value || sending.value) return;
   sending.value = true;
-  const content = message.value.trim();
-  const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const optimistic = {
-    _id: tempId,
-    username: userStore.user?.username || "Tú",
-    content,
-    createdAt: new Date().toISOString(),
-    _temp: true,
-  };
-  messages.value.push(optimistic);
-  scrollToBottom();
   try {
-    const response = await api.post("/forum/messages", {
-      content,
-      socketId: socket.id,
-    });
-    console.log("[Forum] Message sent, response:", response.data);
-    const idx = messages.value.findIndex((m) => m._id === tempId);
-    if (idx !== -1) {
-      messages.value[idx] = response.data;
-    } else if (!messages.value.find((m) => m._id === response.data._id)) {
-      messages.value.push(response.data);
-    }
-    dedupeMessages();
+    const content = message.value.trim();
+    const response = await api.post("/forum/messages", { content });
+    // El mensaje llegará por broadcast; opcionalmente podrías insertar aquí también
     message.value = "";
   } catch (e) {
     console.error("Error posting message", e);
-    // Marcar optimista como error para posible reintento
-    const idx = messages.value.findIndex((m) => m._id === tempId);
-    if (idx !== -1) messages.value[idx]._error = true;
     alert(e?.response?.data?.message || "Error publicando el mensaje");
   } finally {
     sending.value = false;
-    scrollToBottom();
   }
 }
 
-function dedupeMessages() {
-  const seen = new Set();
-  messages.value = messages.value.filter((m) => {
-    const id = m && m._id;
-    if (!id) return true;
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
-}
+// (dedupe removido)
 
 onMounted(() => {
   console.log("[Forum] Component mounted, loading messages...");
   socket.on("connect", () => {
     console.log("[Forum] Socket connected:", socket.id);
   });
-
-  // Registrar listener solo una vez
   socket.on("forum:new", handleNewMessage);
-  console.log('[Forum] Listener "forum:new" registrado');
-
-  // Conectar si aún no está conectado
-  if (!socket.connected) {
-    console.log("[Forum] Socket no conectado, intentando conectar...");
-    socket.connect();
-  }
-
-  // Cargar mensajes iniciales
+  if (!socket.connected) socket.connect();
   loadMessages();
 });
 
 onBeforeUnmount(() => {
   console.log("[Forum] Component unmounting, cleaning up...");
   socket.off("forum:new", handleNewMessage);
-  // Desconectar la instancia creada por este componente
-  if (socket.connected) {
-    socket.disconnect();
-    console.log("[Forum] Socket desconectado al desmontar");
-  }
+  if (socket.connected) socket.disconnect();
 });
 </script>
 
