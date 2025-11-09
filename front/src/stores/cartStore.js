@@ -43,16 +43,19 @@ export const useCartStore = defineStore('cart', {
 
       const existingItem = this.items.find(item => item._id === product._id);
       if (existingItem) {
-        // Actualizar el stock del item en el carrito con el stock actual del producto
-        existingItem.stock = productStock;
-        
         // Verificar que no exceda el stock disponible
         if (existingItem.quantity >= productStock) {
           return { success: false, error: `No hay suficiente stock. Disponible: ${productStock} unidades` };
         }
         existingItem.quantity++;
+        // Actualizar información del producto (precio, nombre, etc.) pero NO el stock
+        existingItem.name = product.name;
+        existingItem.price = product.price;
+        existingItem.image = product.image;
       } else {
-        this.items.push({ ...product, quantity: 1 });
+        // Al agregar nuevo item, NO incluir el stock en lo que se guarda
+        const { stock, ...productWithoutStock } = product;
+        this.items.push({ ...productWithoutStock, quantity: 1 });
       }
       this.saveCart();
       return { success: true };
@@ -69,8 +72,7 @@ export const useCartStore = defineStore('cart', {
     updateQuantity(productId, quantity) {
       const item = this.items.find(item => item._id === productId);
       if (item) {
-        const productStock = item.stock ?? 0;
-        const newQuantity = Math.max(0, Math.min(quantity, productStock));
+        const newQuantity = Math.max(0, quantity);
         item.quantity = newQuantity;
         if (item.quantity === 0) {
           this.removeFromCart(productId);

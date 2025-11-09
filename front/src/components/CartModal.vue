@@ -37,7 +37,6 @@
                   )
                 "
                 :min="0"
-                :max="item.stock ?? 0"
                 class="quantity-input"
               />
               <button @click="$emit('increase', item)">+</button>

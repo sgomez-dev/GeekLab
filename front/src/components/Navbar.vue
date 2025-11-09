@@ -169,11 +169,7 @@ function getImageUrl(product) {
 }
 
 function increaseQuantity(item) {
-  const result = cartStore.updateQuantity(item._id, item.quantity + 1);
-  if (result.success && result.quantity < item.quantity + 1) {
-    // La cantidad fue limitada por el stock
-    alert(`No hay suficiente stock. Disponible: ${item.stock ?? 0} unidades`);
-  }
+  cartStore.updateQuantity(item._id, item.quantity + 1);
 }
 
 function decreaseQuantity(item) {
@@ -181,11 +177,7 @@ function decreaseQuantity(item) {
 }
 
 function updateQuantityDirect(item, quantity) {
-  const result = cartStore.updateQuantity(item._id, quantity);
-  if (result.success && result.quantity < quantity) {
-    // La cantidad fue limitada por el stock
-    alert(`No hay suficiente stock. Disponible: ${item.stock ?? 0} unidades`);
-  }
+  cartStore.updateQuantity(item._id, quantity);
 }
 
 async function checkout() {
