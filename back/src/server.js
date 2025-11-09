@@ -18,23 +18,30 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = [
+  'http://15.15.15.7:32136', 
+  'http://localhost:32136', 
+  'http://15.15.15.7:32131', 
+  'http://localhost:4000',
+  'https://geeklab.sgomez.dev',
+  'https://geeklab-back.sgomez.dev'
+];
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      'http://15.15.15.7:32136', 
-      'http://localhost:32136', 
-      'http://15.15.15.7:32131', 
-      'http://localhost:4000',
-      'https://geeklab.sgomez.dev',
-      'https://geeklab-back.sgomez.dev'
-    ],
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 const port = process.env.PORT || 4000;
+
+console.log('[Socket.IO] Configured with CORS origins:', allowedOrigins);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

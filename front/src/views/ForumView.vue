@@ -97,12 +97,19 @@ async function sendMessage() {
 }
 
 onMounted(() => {
+  console.log("[Forum] Component mounted, loading messages...");
+  console.log(
+    "[Forum] Socket status:",
+    socket.connected ? "Connected" : "Disconnected"
+  );
   loadMessages();
   // Register the event listener
   socket.on("forum:new", handleNewMessage);
+  console.log('[Forum] Event listener registered for "forum:new"');
 });
 
 onBeforeUnmount(() => {
+  console.log("[Forum] Component unmounting, cleaning up...");
   // Clean up: remove the event listener when component is destroyed
   socket.off("forum:new", handleNewMessage);
 });

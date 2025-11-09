@@ -17,12 +17,14 @@ const getSocketUrl = () => {
 };
 
 const SOCKET_URL = getSocketUrl();
+console.log('[Socket] Connecting to:', SOCKET_URL);
 
 // Singleton instance
 let socketInstance = null;
 
 export const getSocket = () => {
     if (!socketInstance) {
+        console.log('[Socket] Creating new socket instance...');
         socketInstance = io(SOCKET_URL, {
             transports: ['websocket', 'polling'],
             reconnection: true,
@@ -30,19 +32,28 @@ export const getSocket = () => {
             reconnectionDelayMax: 5000,
             reconnectionAttempts: Infinity,
             timeout: 20000,
-            autoConnect: true
+            autoConnect: true,
+            withCredentials: true
         });
 
         socketInstance.on('connect', () => {
-            console.log('Socket connected:', socketInstance.id);
+            console.log('[Socket] Connected:', socketInstance.id);
         });
 
         socketInstance.on('disconnect', (reason) => {
-            console.log('Socket disconnected:', reason);
+            console.log('[Socket] Disconnected:', reason);
         });
 
         socketInstance.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
+            console.error('[Socket] Connection error:', error.message);
+        });
+
+        socketInstance.on('reconnect_attempt', (attemptNumber) => {
+            console.log('[Socket] Reconnection attempt:', attemptNumber);
+        });
+
+        socketInstance.on('reconnect_failed', () => {
+            console.error('[Socket] Reconnection failed');
         });
     }
     return socketInstance;
