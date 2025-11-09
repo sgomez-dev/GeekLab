@@ -2,37 +2,47 @@
   <div>
     <div class="catalog">
       <h2>Catálogo GeekLab</h2>
-      
+
       <!-- Search and Filters Section -->
       <div class="search-filters">
         <div class="search-bar">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.35-4.35"></path>
           </svg>
-          <input 
-            type="text" 
-            v-model="searchTerm" 
-            placeholder="Buscar productos..." 
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Buscar productos..."
             class="search-input"
           />
         </div>
-        
+
         <div class="filters">
           <select v-model="selectedBrand" class="filter-select">
             <option value="">Todas las Marcas</option>
-            <option v-for="brand in availableBrands" :key="brand" :value="brand">
+            <option
+              v-for="brand in availableBrands"
+              :key="brand"
+              :value="brand"
+            >
               {{ brand }}
             </option>
           </select>
-          
+
           <select v-model="selectedType" class="filter-select">
             <option value="">Todos los Tipos</option>
             <option v-for="type in availableTypes" :key="type" :value="type">
               {{ type }}
             </option>
           </select>
-          
+
           <select v-model="selectedPriceRange" class="filter-select">
             <option value="">Todos los Precios</option>
             <option value="0-50">€0 - €50</option>
@@ -41,13 +51,19 @@
             <option value="200-500">€200 - €500</option>
             <option value="500+">€500+</option>
           </select>
-          
-          <button 
-            v-if="hasActiveFilters" 
-            @click="clearFilters" 
+
+          <button
+            v-if="hasActiveFilters"
+            @click="clearFilters"
             class="clear-filters-btn"
           >
-            <svg class="clear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              class="clear-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -55,11 +71,15 @@
           </button>
         </div>
       </div>
-      
+
       <div class="product-grid">
-        <ProductCard v-for="p in filteredProducts" :key="p._id || p.id || p.productId" :product="p" />
+        <ProductCard
+          v-for="p in filteredProducts"
+          :key="p._id || p.id || p.productId"
+          :product="p"
+        />
       </div>
-      
+
       <div v-if="filteredProducts.length === 0" class="no-results">
         <p>No se encontraron productos que coincidan con los filtros.</p>
       </div>
@@ -71,14 +91,14 @@
 import { ref, onMounted, computed, onBeforeUnmount } from "vue";
 import api from "../api/axios";
 import ProductCard from "../components/ProductCard.vue";
-import { createSocket } from '../api/socket';
+import { createSocket } from "../api/socket";
 
 const products = ref([]);
 const socket = createSocket();
-const searchTerm = ref('');
-const selectedBrand = ref('');
-const selectedType = ref('');
-const selectedPriceRange = ref('');
+const searchTerm = ref("");
+const selectedBrand = ref("");
+const selectedType = ref("");
+const selectedPriceRange = ref("");
 
 const productsSorted = computed(() => {
   // Si el backend entrega nuevo al final, invertimos para mostrarlo primero
@@ -88,24 +108,26 @@ const productsSorted = computed(() => {
 // Get unique brands and types from products
 const availableBrands = computed(() => {
   const brands = products.value
-    .map(p => p.brand)
-    .filter(brand => brand && brand.trim() !== '');
+    .map((p) => p.brand)
+    .filter((brand) => brand && brand.trim() !== "");
   return [...new Set(brands)].sort();
 });
 
 const availableTypes = computed(() => {
   const types = products.value
-    .map(p => p.category)
-    .filter(type => type && type.trim() !== '');
+    .map((p) => p.category)
+    .filter((type) => type && type.trim() !== "");
   return [...new Set(types)].sort();
 });
 
 // Check if there are active filters
 const hasActiveFilters = computed(() => {
-  return searchTerm.value.trim() !== '' || 
-         selectedBrand.value !== '' || 
-         selectedType.value !== '' || 
-         selectedPriceRange.value !== '';
+  return (
+    searchTerm.value.trim() !== "" ||
+    selectedBrand.value !== "" ||
+    selectedType.value !== "" ||
+    selectedPriceRange.value !== ""
+  );
 });
 
 // Filter products based on search and filters
@@ -113,36 +135,37 @@ const filteredProducts = computed(() => {
   let filtered = productsSorted.value;
 
   // Search filter
-  if (searchTerm.value.trim() !== '') {
+  if (searchTerm.value.trim() !== "") {
     const search = searchTerm.value.toLowerCase();
-    filtered = filtered.filter(p => 
-      p.name?.toLowerCase().includes(search) ||
-      p.brand?.toLowerCase().includes(search) ||
-      p.description?.toLowerCase().includes(search) ||
-      p.category?.toLowerCase().includes(search)
+    filtered = filtered.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(search) ||
+        p.brand?.toLowerCase().includes(search) ||
+        p.description?.toLowerCase().includes(search) ||
+        p.category?.toLowerCase().includes(search)
     );
   }
 
   // Brand filter
-  if (selectedBrand.value !== '') {
-    filtered = filtered.filter(p => p.brand === selectedBrand.value);
+  if (selectedBrand.value !== "") {
+    filtered = filtered.filter((p) => p.brand === selectedBrand.value);
   }
 
   // Type filter
-  if (selectedType.value !== '') {
-    filtered = filtered.filter(p => p.category === selectedType.value);
+  if (selectedType.value !== "") {
+    filtered = filtered.filter((p) => p.category === selectedType.value);
   }
 
   // Price range filter
-  if (selectedPriceRange.value !== '') {
+  if (selectedPriceRange.value !== "") {
     const range = selectedPriceRange.value;
-    filtered = filtered.filter(p => {
+    filtered = filtered.filter((p) => {
       const price = p.price || 0;
-      if (range === '0-50') return price >= 0 && price <= 50;
-      if (range === '50-100') return price > 50 && price <= 100;
-      if (range === '100-200') return price > 100 && price <= 200;
-      if (range === '200-500') return price > 200 && price <= 500;
-      if (range === '500+') return price > 500;
+      if (range === "0-50") return price >= 0 && price <= 50;
+      if (range === "50-100") return price > 50 && price <= 100;
+      if (range === "100-200") return price > 100 && price <= 200;
+      if (range === "200-500") return price > 200 && price <= 500;
+      if (range === "500+") return price > 500;
       return true;
     });
   }
@@ -151,19 +174,30 @@ const filteredProducts = computed(() => {
 });
 
 function clearFilters() {
-  searchTerm.value = '';
-  selectedBrand.value = '';
-  selectedType.value = '';
-  selectedPriceRange.value = '';
+  searchTerm.value = "";
+  selectedBrand.value = "";
+  selectedType.value = "";
+  selectedPriceRange.value = "";
 }
 
 function handleStockUpdate(payload) {
+  console.log("[ProductsView] Stock update received:", payload);
   const id = payload?.productId;
   const stock = payload?.stock;
   if (!id) return;
-  const idx = products.value.findIndex(p => (p._id || p.id || p.productId) === id);
+  const idx = products.value.findIndex(
+    (p) => (p._id || p.id || p.productId) === id
+  );
   if (idx !== -1) {
+    console.log(
+      "[ProductsView] Updating product at index",
+      idx,
+      "with new stock:",
+      stock
+    );
     products.value[idx] = { ...products.value[idx], stock };
+  } else {
+    console.log("[ProductsView] Product not found in list:", id);
   }
 }
 
@@ -174,11 +208,24 @@ onMounted(async () => {
   } catch (error) {
     console.error("Error fetching products:", error);
   }
-  socket.on('stock:update', handleStockUpdate);
+
+  console.log("[ProductsView] Registering socket listener for stock:update");
+  socket.on("connect", () => {
+    console.log("[ProductsView] Socket connected:", socket.id);
+  });
+  socket.on("stock:update", handleStockUpdate);
+
+  // Conectar si no está conectado
+  if (!socket.connected) {
+    console.log("[ProductsView] Socket not connected, connecting...");
+    socket.connect();
+  }
 });
 
 onBeforeUnmount(() => {
-  socket.off('stock:update', handleStockUpdate);
+  console.log("[ProductsView] Unmounting, cleaning up socket listeners");
+  socket.off("stock:update", handleStockUpdate);
+  socket.off("connect");
   socket.close();
 });
 </script>

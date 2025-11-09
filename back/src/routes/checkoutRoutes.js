@@ -62,9 +62,17 @@ router.post('/', authenticateJWT, async (req, res) => {
         // Emitir eventos de actualización de stock
         const io = getIO();
         if (io) {
+            const clients = io.engine?.clientsCount ?? 'unknown';
+            console.log('[Checkout] Emitting stock updates to', clients, 'clients');
             updates.forEach((p) => {
-                if (p) io.emit('stock:update', { productId: String(p._id), stock: p.stock });
+                if (p) {
+                    const payload = { productId: String(p._id), stock: p.stock };
+                    console.log('[Checkout] Emitting stock:update', payload);
+                    io.emit('stock:update', payload);
+                }
             });
+        } else {
+            console.error('[Checkout] IO instance not available for stock updates');
         }
 
         // Crear la orden
