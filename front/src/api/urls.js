@@ -17,13 +17,13 @@ const getBackendUrl = () => {
 const BACKEND_URL = getBackendUrl();
 
 export function buildImageUrl(image) {
-  if (!image) return '/1762645164725-43831552-sgt.png';
+  if (!image) return '/placeholder.png';
   
   if (/^https?:\/\//i.test(image)) return image;
   if (/^data:/i.test(image)) return image;
 
   const trimmed = String(image).trim();
-  if (!trimmed) return '/1762645164725-43831552-sgt.png';
+  if (!trimmed) return '/placeholder.png';
 
   if (trimmed.startsWith('/uploads/')) {
     return `${BACKEND_URL}${trimmed}`;
