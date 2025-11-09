@@ -1,33 +1,42 @@
-// Helper to build complete image URLs for product images.
-// Accepts:
-// - absolute URLs (http(s)://...) -> returned unchanged
-// - paths starting with /uploads or uploads or /somepath -> normalized to BACKEND_URL + path (ensuring leading slash)
-// - plain filenames (e.g. '1762645...png') -> normalized to BACKEND_URL + '/uploads/' + filename
+const getBackendUrl = () => {
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'geeklab.sgomez.dev') {
+      return 'https://geeklab-back.sgomez.dev';
+    }
+    if (hostname === '15.15.15.7') {
+      return 'http://15.15.15.7:32131';
+    }
+  }
+  return 'http://15.15.15.7:32131';
+};
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://geeklab-back.sgomez.dev';
+const BACKEND_URL = getBackendUrl();
 
 export function buildImageUrl(image) {
-  if (!image) return '/placeholder.png';
-  // already an absolute URL
+  if (!image) return '/1762645164725-43831552-sgt.png';
+  
   if (/^https?:\/\//i.test(image)) return image;
-
-  // if image looks like a data URL, return as-is
   if (/^data:/i.test(image)) return image;
 
-  // strip whitespace
   const trimmed = String(image).trim();
-  if (!trimmed) return '/placeholder.png';
+  if (!trimmed) return '/1762645164725-43831552-sgt.png';
 
-  // if it already starts with /uploads or uploads, ensure leading slash then join
-  if (/^\/?uploads\//i.test(trimmed)) {
-    const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-    return `${BACKEND_URL}${path}`;
+  if (trimmed.startsWith('/uploads/')) {
+    return `${BACKEND_URL}${trimmed}`;
   }
 
-  // if it starts with a slash but not /uploads, keep it (could be other static dir)
-  if (trimmed.startsWith('/')) return `${BACKEND_URL}${trimmed}`;
+  if (trimmed.startsWith('uploads/')) {
+    return `${BACKEND_URL}/${trimmed}`;
+  }
 
-  // otherwise treat as filename and prefix with /uploads/
+  if (trimmed.startsWith('/')) {
+    return `${BACKEND_URL}${trimmed}`;
+  }
+
   return `${BACKEND_URL}/uploads/${trimmed}`;
 }
 
