@@ -25,6 +25,10 @@ back/
 ├── src/
 │   ├── config/
 │   │   └── db.js
+│   ├── graphql/
+│   │   ├── context.js
+│   │   ├── resolvers.js
+│   │   └── schema.js
 │   ├── middleware/
 │   │   └── authenticateJWT.js
 │   ├── models/
@@ -38,7 +42,8 @@ back/
 │   │   ├── forumRoutes.js
 │   │   ├── orderRoutes.js
 │   │   ├── productRoutes.js
-│   │   └── productRoutesUpload.js
+│   │   ├── productRoutesUpload.js
+│   │   └── userRoutes.js
 │   ├── server.js
 │   └── socket.js
 ├── uploads/
@@ -51,6 +56,7 @@ back/
 - **Express.js 5.1** - Framework web moderno
 - **MongoDB** - Base de datos NoSQL
 - **Mongoose 8.19** - ODM para MongoDB con validación de esquemas
+- **Apollo Server 5** - Servidor GraphQL para consultas avanzadas
 - **Socket.io 4.8** - Comunicación en tiempo real (WebSocket + polling)
 - **@socket.io/redis-adapter** - Adapter para Redis (opcional, para múltiples instancias)
 - **ioredis** - Cliente Redis (opcional)
@@ -182,6 +188,46 @@ Usa la cadena de conexión de tu cluster en `MONGO_URI`.
 - `GET /api/orders` - Obtener órdenes del usuario (requiere auth)
   - Headers: `Authorization: Bearer <token>`
   - Response: Array de órdenes del usuario autenticado
+
+### Usuarios (`/api/users`)
+
+- `GET /api/users` - Listar todos los usuarios (requiere admin)
+
+  - Headers: `Authorization: Bearer <token>`
+  - Response: Array de usuarios sin contraseñas
+
+- `POST /api/users` - Crear nuevo usuario (requiere admin)
+
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ username, email, password, role }`
+  - Response: `{ message: "User created successfully", user }`
+
+- `GET /api/users/:id` - Obtener usuario por ID (requiere admin)
+
+  - Headers: `Authorization: Bearer <token>`
+  - Response: Objeto usuario sin contraseña
+
+- `PUT /api/users/:id/role` - Cambiar rol de usuario (requiere admin)
+
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ role: "user" | "admin" }`
+  - Response: `{ message: "User role updated successfully", user }`
+
+- `DELETE /api/users/:id` - Eliminar usuario (requiere admin)
+  - Headers: `Authorization: Bearer <token>`
+  - Response: `{ message: "User deleted successfully" }`
+
+### GraphQL (`/graphql`)
+
+- `POST /graphql` - Endpoint GraphQL para consultas y mutaciones
+
+  - Headers: `Authorization: Bearer <token>` (opcional, según la query)
+  - Body: `{ query, variables, operationName }`
+  - Proporciona acceso flexible a productos, usuarios, órdenes y más
+  - Ver [GRAPHQL_DOCUMENTATION.md](../GRAPHQL_DOCUMENTATION.md) para queries disponibles
+
+- `GET /graphql` - Información del endpoint GraphQL
+  - Response: `{ message, introspection: true }`
 
 ## Autenticación y Autorización
 

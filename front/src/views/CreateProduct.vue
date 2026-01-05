@@ -3,11 +3,17 @@
     <div class="toolbar">
       <button class="back" @click="goBack">← Atrás</button>
     </div>
-    <h2>{{ isEditMode ? 'Editar Producto' : 'Crear Producto' }}</h2>
+    <h2>{{ isEditMode ? "Editar Producto" : "Crear Producto" }}</h2>
     <form @submit.prevent="onSubmit" class="create-form">
       <div class="form-group">
         <label for="name">Nombre <span class="required">*</span></label>
-        <input id="name" type="text" v-model="name" required placeholder="Ej: Teclado Mecánico RGB" />
+        <input
+          id="name"
+          type="text"
+          v-model="name"
+          required
+          placeholder="Ej: Teclado Mecánico RGB"
+        />
       </div>
 
       <div class="form-row">
@@ -16,11 +22,13 @@
           <div class="select-wrapper">
             <select id="brand" v-model="selectedBrand" @change="onBrandChange">
               <option value="">Seleccionar marca</option>
-              <option v-for="b in availableBrands" :key="b" :value="b">{{ b }}</option>
+              <option v-for="b in availableBrands" :key="b" :value="b">
+                {{ b }}
+              </option>
               <option value="__new__">+ Crear nueva marca</option>
             </select>
           </div>
-          <input 
+          <input
             v-if="selectedBrand === '__new__'"
             v-model="newBrand"
             class="new-input"
@@ -31,15 +39,23 @@
         </div>
 
         <div class="form-group">
-          <label for="category">Categoría <span class="required">*</span></label>
+          <label for="category"
+            >Categoría <span class="required">*</span></label
+          >
           <div class="select-wrapper">
-            <select id="category" v-model="selectedCategory" @change="onCategoryChange">
+            <select
+              id="category"
+              v-model="selectedCategory"
+              @change="onCategoryChange"
+            >
               <option value="">Seleccionar categoría</option>
-              <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
+              <option v-for="c in availableCategories" :key="c" :value="c">
+                {{ c }}
+              </option>
               <option value="__new__">+ Crear nueva categoría</option>
             </select>
           </div>
-          <input 
+          <input
             v-if="selectedCategory === '__new__'"
             v-model="newCategory"
             class="new-input"
@@ -53,55 +69,98 @@
       <div class="form-row">
         <div class="form-group">
           <label for="price">Precio (€) <span class="required">*</span></label>
-          <input id="price" v-model.number="price" type="number" step="0.01" min="0" required placeholder="0.00" />
+          <input
+            id="price"
+            v-model.number="price"
+            type="number"
+            step="0.01"
+            min="0"
+            required
+            placeholder="0.00"
+          />
         </div>
 
         <div class="form-group">
           <label for="stock">Stock <span class="required">*</span></label>
-          <input id="stock" v-model.number="stock" type="number" min="0" required placeholder="0" />
+          <input
+            id="stock"
+            v-model.number="stock"
+            type="number"
+            min="0"
+            required
+            placeholder="0"
+          />
         </div>
       </div>
 
       <div class="form-group">
-        <label for="description">Descripción <span class="required">*</span></label>
-        <textarea id="description" v-model="description" rows="4" required placeholder="Describe las características del producto..."></textarea>
+        <label for="description"
+          >Descripción <span class="required">*</span></label
+        >
+        <textarea
+          id="description"
+          v-model="description"
+          rows="4"
+          required
+          placeholder="Describe las características del producto..."
+        ></textarea>
       </div>
 
       <div class="form-group">
-            <label for="image">Imagen <span class="required" v-if="!isEditMode">*</span></label>
-            <div class="file-input-wrapper">
-              <input 
-                id="image" 
-                type="file" 
-                @change="onFileChange" 
-                accept="image/*"
-                class="file-input"
-                :required="!isEditMode"
-              />
-              <label for="image" class="file-label">
-                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <span v-if="!imageFile">{{ isEditMode ? 'Cambiar imagen (opcional)' : 'Seleccionar imagen' }}</span>
-                <span v-else class="file-name">{{ imageFile.name }}</span>
-              </label>
-            </div>
-            <div v-if="imagePreview || currentImageUrl" class="image-preview">
-              <img :src="imagePreview || currentImageUrl" alt="Preview" />
-            </div>
+        <label for="image"
+          >Imagen <span class="required" v-if="!isEditMode">*</span></label
+        >
+        <div class="file-input-wrapper">
+          <input
+            id="image"
+            type="file"
+            @change="onFileChange"
+            accept="image/*"
+            class="file-input"
+            :required="!isEditMode"
+          />
+          <label for="image" class="file-label">
+            <svg
+              class="file-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span v-if="!imageFile">{{
+              isEditMode ? "Cambiar imagen (opcional)" : "Seleccionar imagen"
+            }}</span>
+            <span v-else class="file-name">{{ imageFile.name }}</span>
+          </label>
+        </div>
+        <div v-if="imagePreview || currentImageUrl" class="image-preview">
+          <img :src="imagePreview || currentImageUrl" alt="Preview" />
+        </div>
       </div>
 
       <div class="form-actions">
         <div class="form-actions-left">
-          <button v-if="isEditMode" type="button" class="btn-danger" @click="openDeleteModal" :disabled="isDeleting">
+          <button
+            v-if="isEditMode"
+            type="button"
+            class="btn-danger"
+            @click="openDeleteModal"
+            :disabled="isDeleting"
+          >
             Eliminar Producto
           </button>
         </div>
         <div class="form-actions-right">
-          <button type="button" class="btn-secondary" @click="goBack">Cancelar</button>
-          <button type="submit" class="btn-primary" :disabled="!isFormValid">{{ isEditMode ? 'Guardar Cambios' : 'Crear Producto' }}</button>
+          <button type="button" class="btn-secondary" @click="goBack">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" :disabled="!isFormValid">
+            {{ isEditMode ? "Guardar Cambios" : "Crear Producto" }}
+          </button>
         </div>
       </div>
     </form>
@@ -114,10 +173,21 @@
   <div v-if="showDeleteModal" class="modal-backdrop">
     <div class="modal">
       <h4>Eliminar producto</h4>
-      <p>¿Seguro que quieres eliminar este producto? Esta acción no se puede deshacer.</p>
+      <p>
+        ¿Seguro que quieres eliminar este producto? Esta acción no se puede
+        deshacer.
+      </p>
       <div class="modal-actions">
-        <button class="btn" @click="closeDeleteModal" :disabled="isDeleting">Cancelar</button>
-        <button class="btn danger" @click="confirmDelete" :disabled="isDeleting">{{ isDeleting ? 'Eliminando...' : 'Eliminar' }}</button>
+        <button class="btn" @click="closeDeleteModal" :disabled="isDeleting">
+          Cancelar
+        </button>
+        <button
+          class="btn danger"
+          @click="confirmDelete"
+          :disabled="isDeleting"
+        >
+          {{ isDeleting ? "Eliminando..." : "Eliminar" }}
+        </button>
       </div>
     </div>
   </div>
@@ -132,12 +202,18 @@ import { useUserStore } from "../stores/userStore";
 const name = ref("");
 const selectedBrand = ref("");
 const newBrand = ref("");
-const brand = computed(() => selectedBrand.value === "__new__" ? newBrand.value : selectedBrand.value);
+const brand = computed(() =>
+  selectedBrand.value === "__new__" ? newBrand.value : selectedBrand.value
+);
 const price = ref(0);
 const description = ref("");
 const selectedCategory = ref("");
 const newCategory = ref("");
-const category = computed(() => selectedCategory.value === "__new__" ? newCategory.value : selectedCategory.value);
+const category = computed(() =>
+  selectedCategory.value === "__new__"
+    ? newCategory.value
+    : selectedCategory.value
+);
 const stock = ref(0);
 const imageFile = ref(null);
 const imagePreview = ref(null);
@@ -161,23 +237,27 @@ const isFormValid = computed(() => {
     description.value.trim() !== "" &&
     resolvedBrand &&
     resolvedCategory &&
-    (price.value !== null && price.value !== "" && !Number.isNaN(Number(price.value))) &&
-    (stock.value !== null && stock.value !== "" && Number(stock.value) >= 0) &&
+    price.value !== null &&
+    price.value !== "" &&
+    !Number.isNaN(Number(price.value)) &&
+    stock.value !== null &&
+    stock.value !== "" &&
+    Number(stock.value) >= 0 &&
     (isEditMode.value || !!imageFile.value)
   );
 });
 
 const availableBrands = computed(() => {
   const brands = products.value
-    .map(p => p.brand)
-    .filter(b => b && b.trim() !== '');
+    .map((p) => p.brand)
+    .filter((b) => b && b.trim() !== "");
   return [...new Set(brands)].sort();
 });
 
 const availableCategories = computed(() => {
   const categories = products.value
-    .map(p => p.category)
-    .filter(c => c && c.trim() !== '');
+    .map((p) => p.category)
+    .filter((c) => c && c.trim() !== "");
   return [...new Set(categories)].sort();
 });
 
@@ -212,13 +292,19 @@ function onCategoryChange() {
 }
 
 function addNewBrand() {
-  if (newBrand.value.trim() && !availableBrands.value.includes(newBrand.value.trim())) {
+  if (
+    newBrand.value.trim() &&
+    !availableBrands.value.includes(newBrand.value.trim())
+  ) {
     // La marca se agregará automáticamente cuando se cree el producto
   }
 }
 
 function addNewCategory() {
-  if (newCategory.value.trim() && !availableCategories.value.includes(newCategory.value.trim())) {
+  if (
+    newCategory.value.trim() &&
+    !availableCategories.value.includes(newCategory.value.trim())
+  ) {
     // La categoría se agregará automáticamente cuando se cree el producto
   }
 }
@@ -244,7 +330,9 @@ async function loadProduct() {
     stock.value = p.stock || 0;
     description.value = p.description || "";
     if (p.image) {
-      currentImageUrl.value = p.image.startsWith("http") ? p.image : `https://geeklab-back.sgomez.dev${p.image}`;
+      currentImageUrl.value = p.image.startsWith("http")
+        ? p.image
+        : `http://localhost:4000${p.image}`;
     }
   } catch (error) {
     console.error("Error loading product:", error);
@@ -268,18 +356,18 @@ onMounted(async () => {
 async function onSubmit() {
   error.value = null;
   msg.value = null;
-  
+
   // Validar que si se seleccionó "nuevo", se haya ingresado un valor
   if (selectedBrand.value === "__new__" && !newBrand.value.trim()) {
     error.value = "Por favor ingresa el nombre de la nueva marca";
     return;
   }
-  
+
   if (selectedCategory.value === "__new__" && !newCategory.value.trim()) {
     error.value = "Por favor ingresa el nombre de la nueva categoría";
     return;
   }
-  
+
   if (!description.value.trim()) {
     error.value = "La descripción es requerida";
     return;
@@ -296,7 +384,11 @@ async function onSubmit() {
     error.value = "La categoría es requerida";
     return;
   }
-  if (price.value === null || price.value === "" || Number.isNaN(Number(price.value))) {
+  if (
+    price.value === null ||
+    price.value === "" ||
+    Number.isNaN(Number(price.value))
+  ) {
     error.value = "El precio es requerido";
     return;
   }
@@ -308,14 +400,16 @@ async function onSubmit() {
     error.value = "La imagen es requerida";
     return;
   }
-  
+
   try {
     const formData = new FormData();
     formData.append("name", name.value.trim());
     if (brand.value.trim()) formData.append("brand", brand.value.trim());
     formData.append("price", price.value);
-    if (description.value.trim()) formData.append("description", description.value.trim());
-    if (category.value.trim()) formData.append("category", category.value.trim());
+    if (description.value.trim())
+      formData.append("description", description.value.trim());
+    if (category.value.trim())
+      formData.append("category", category.value.trim());
     formData.append("stock", stock.value || 0);
     if (imageFile.value) formData.append("image", imageFile.value);
 
@@ -333,7 +427,11 @@ async function onSubmit() {
       setTimeout(() => router.push("/products"), 1500);
     }
   } catch (err) {
-    error.value = err.response?.data?.message || (isEditMode.value ? "Error al actualizar producto" : "Error al crear producto");
+    error.value =
+      err.response?.data?.message ||
+      (isEditMode.value
+        ? "Error al actualizar producto"
+        : "Error al crear producto");
   }
 }
 
@@ -736,7 +834,7 @@ select:focus {
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .form-actions {
     flex-direction: column;
     align-items: stretch;
@@ -747,7 +845,7 @@ select:focus {
     width: 100%;
     flex-direction: column;
   }
-  
+
   .btn-primary,
   .btn-secondary,
   .btn-danger {

@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { useUserStore } from './userStore';
 import { watch } from 'vue';
 import api from '../api/axios';
+import { apolloClient } from '../api/graphql';
+import { gql } from '@apollo/client/core';
 
 function getStorageKey(userId) {
   return userId ? `cart:${userId}` : 'cart:guest';
@@ -84,15 +86,51 @@ export const useCartStore = defineStore('cart', {
       return { success: false };
     },
 
-    async checkout() {
+    async checkout(useGraphQL = true) {
       try {
-        const response = await api.post('/checkout', {
-          items: this.items
-        });
-        this.clearCart();
-        return { success: true, data: response.data };
+        if (useGraphQL) {
+          // Usar GraphQL para crear el pedido
+          const CREATE_ORDER = gql`
+            mutation CreateOrder($items: [OrderItemInput!]!) {
+              createOrder(items: $items) {
+                _id
+                total
+                status
+                items {
+                  productId
+                  name
+                  price
+                  quantity
+                }
+                createdAt
+              }
+            }
+          `;
+
+          const orderItems = this.items.map(item => ({
+            productId: item._id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          }));
+
+          const { data } = await apolloClient.mutate({
+            mutation: CREATE_ORDER,
+            variables: { items: orderItems }
+          });
+
+          this.clearCart();
+          return { success: true, data: data.createOrder };
+        } else {
+          // Usar REST como alternativa
+          const response = await api.post('/checkout', {
+            items: this.items
+          });
+          this.clearCart();
+          return { success: true, data: response.data };
+        }
       } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Error al procesar la compra';
+        const errorMessage = error.message || error.response?.data?.message || 'Error al procesar la compra';
         const details = error.response?.data?.details || [];
         return { 
           success: false, 

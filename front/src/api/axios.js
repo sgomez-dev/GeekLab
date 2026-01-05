@@ -1,9 +1,17 @@
 import axios from 'axios';
 
-const BACKEND_URL = 'https://geeklab-back.sgomez.dev';
+const getBackendUrl = () => {
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL;
+  }
+  // Default to localhost for development
+  return 'http://localhost:4000';
+};
+
+const BACKEND_URL = getBackendUrl().replace(/\/$/, '');
 
 const api = axios.create({
-    baseURL: 'https://geeklab-back.sgomez.dev/api',
+    baseURL: `${BACKEND_URL}/api`,
 });
 
 api.interceptors.request.use((config) => {

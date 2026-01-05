@@ -9,7 +9,7 @@ export default defineConfig({
     port: 32136,
     strictPort: true,
     allowedHosts: [
-      'geeklab.sgomez.dev',
+      'localhost',
       'localhost',
       '15.15.15.7',
       '127.0.0.1'

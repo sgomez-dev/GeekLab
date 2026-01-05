@@ -14,8 +14,13 @@ import authRoutes from './routes/authRoutes.js';
 import checkoutRoutes from './routes/checkoutRoutes.js';
 import forumRoutes from './routes/forumRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { setupForum } from './socket.js';
 import { connectDB } from './config/db.js';
+import { ApolloServer } from '@apollo/server';
+import { typeDefs } from './graphql/schema.js';
+import { resolvers } from './graphql/resolvers.js';
+import { createContext } from './graphql/context.js';
 
 dotenv.config();
 
@@ -23,12 +28,10 @@ const app = express();
 const server = http.createServer(app);
 
 const allowedOrigins = [
-  'http://15.15.15.7:32136', 
-  'http://localhost:32136', 
-  'http://15.15.15.7:32131', 
+  'http://localhost:5173',  // Vite dev server
+  'http://localhost:3000',  // Alternative frontend port
   'http://localhost:4000',
-  'https://geeklab.sgomez.dev',
-  'https://geeklab-back.sgomez.dev'
+  'http://localhost:8080'
 ];
 
 const io = new Server(server, {
@@ -126,12 +129,63 @@ app.use('/api/auth', authRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/users', userRoutes);
 
 setupForum(io);
 
-connectDB();
+// Initialize database and start server
+async function startServer() {
+  try {
+    await connectDB();
+    
+    // GraphQL Server con Apollo Server 5 standalone
+    const apolloServer = new ApolloServer({
+      typeDefs,
+      resolvers,
+      introspection: true,
+    });
 
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  console.log(`CORS enabled for: http://15.15.15.7:32136`);
-});
+    await apolloServer.start();
+
+    // GraphQL endpoint manejado manualmente para Express 5
+    app.post('/graphql', express.json(), async (req, res) => {
+      try {
+        const context = await createContext({ req });
+        const response = await apolloServer.executeOperation(
+          {
+            query: req.body.query,
+            variables: req.body.variables,
+            operationName: req.body.operationName,
+          },
+          { contextValue: context }
+        );
+        
+        res.status(200).json(response.body);
+      } catch (error) {
+        console.error('[GraphQL] Error:', error);
+        res.status(500).json({ errors: [{ message: error.message }] });
+      }
+    });
+
+    // GET endpoint para GraphQL Playground/introspection
+    app.get('/graphql', (req, res) => {
+      res.json({
+        message: 'GraphQL endpoint. Send POST requests with queries.',
+        introspection: true,
+      });
+    });
+
+    console.log('[GraphQL] Server ready at /graphql');
+
+    server.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+      console.log(`CORS enabled for: http://15.15.15.7:32136`);
+      console.log(`GraphQL endpoint: http://localhost:${port}/graphql`);
+    });
+  } catch (error) {
+    console.error('Error starting server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

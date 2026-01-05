@@ -44,7 +44,7 @@
           </div>
           <div class="cart-total">Total: €{{ total.toFixed(2) }}</div>
           <button class="checkout-button" @click="$emit('checkout')">
-            Proceder al pago
+            Finalizar compra
           </button>
         </div>
       </div>

@@ -11,6 +11,7 @@ const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   items: { type: [orderItemSchema], required: true },
   total: { type: Number, required: true },
+  status: { type: String, enum: ['pending', 'completed'], default: 'pending' },
 }, { timestamps: true });
 
 export default mongoose.model('Order', orderSchema);

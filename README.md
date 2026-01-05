@@ -24,7 +24,9 @@ GeekLab es una plataforma de e-commerce especializada en productos de informáti
 - Realizar compras seguras con validación de stock en tiempo real
 - Dejar reseñas con sistema de estrellas (1-5) y comentarios
 - Participar en un foro de discusión en tiempo real con WebSockets
+- Consultar datos mediante GraphQL para consultas flexibles y eficientes
 - Administrar productos: crear, editar, eliminar y gestionar stock (solo administradores)
+- Gestionar usuarios: crear, editar roles y eliminar usuarios (solo administradores)
 - Sistema de autenticación con JWT y roles de usuario
 - Actualización en tiempo real del stock del catálogo tras compras
 
@@ -46,6 +48,7 @@ GeekLab es una plataforma de e-commerce especializada en productos de informáti
 - **Express.js 5** - Framework web para Node.js
 - **MongoDB** - Base de datos NoSQL
 - **Mongoose 8** - ODM para MongoDB
+- **Apollo Server 5** - Servidor GraphQL para consultas avanzadas
 - **Socket.io 4.8** - Comunicación en tiempo real (WebSocket + polling)
 - **JWT** - Autenticación mediante tokens
 - **Multer** - Manejo de carga de archivos
@@ -60,6 +63,7 @@ GeekLab/
 ├── back/
 │   ├── src/
 │   │   ├── config/
+│   │   ├── graphql/
 │   │   ├── middleware/
 │   │   ├── models/
 │   │   ├── routes/
@@ -208,6 +212,8 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 - **Editar producto:** Haz clic en "Editar Producto" en el detalle
 - **Eliminar producto:** Elimina un producto desde la vista de edición
 - **Gestionar stock:** Añade stock a productos fuera de stock desde las cards
+- **Gestionar usuarios:** Navega a `/admin/users` para crear, editar roles o eliminar usuarios
+- **Ver órdenes:** Navega a `/admin/orders` para ver todas las órdenes del sistema
 
 #### 6. Foro
 
@@ -219,6 +225,14 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 
 - **Ruta inválida:** Navega a una ruta que no existe (ej: `/ruta-inexistente`)
 - **Botón de retorno:** Verifica que el botón "Volver al catálogo" funcione
+
+#### 8. GraphQL
+
+- **Endpoint:** Accede a `http://localhost:4000/graphql` en tu navegador
+- **Queries:** Prueba consultas como `{ products { _id name price stock } }`
+- **Mutations:** Crea, actualiza o elimina productos mediante GraphQL
+- **Autenticación:** Incluye el header `Authorization: Bearer <token>`
+- **Herramientas:** Usa Postman, Insomnia o GraphQL Playground para probar
 
 ### Pruebas de Integración
 
@@ -402,6 +416,12 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 - Subida de imágenes de productos
 - Gestión de stock (añadir cuando está fuera de stock)
 - Eliminar productos desde cards o vista de edición
+- Crear y gestionar usuarios (cambiar roles, eliminar)
+- Ver y gestionar todas las órdenes del sistema
+- Acceso a GraphQL para consultas avanzadas
+- Crear y gestionar usuarios (cambiar roles, eliminar)
+- Ver y gestionar todas las órdenes del sistema
+- Acceso a GraphQL para consultas avanzadas
 
 ### Productos
 
@@ -426,6 +446,21 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 - Toasts para notificaciones
 - Página 404 personalizada
 - Navegación intuitiva
+
+### GraphQL
+
+- **Endpoint:** `/graphql` disponible para consultas avanzadas
+- **Queries disponibles:**
+  - `products` - Obtener productos con filtros opcionales
+  - `product(id)` - Obtener un producto específico
+  - `users` - Listar usuarios (requiere admin)
+  - `orders` - Obtener órdenes del usuario autenticado
+- **Mutations disponibles:**
+  - `createProduct` - Crear nuevo producto (requiere admin)
+  - `updateProduct` - Actualizar producto existente (requiere admin)
+  - `deleteProduct` - Eliminar producto (requiere admin)
+- **Documentación completa:** Ver [GRAPHQL_DOCUMENTATION.md](GRAPHQL_DOCUMENTATION.md)
+- **Introspección:** Habilitada para exploración con herramientas como GraphQL Playground
 
 ## Notas Adicionales
 

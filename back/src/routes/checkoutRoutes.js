@@ -75,8 +75,8 @@ router.post('/', authenticateJWT, async (req, res) => {
             console.error('[Checkout] IO instance not available for stock updates');
         }
 
-        // Crear la orden
-        const order = await Order.create({ userId: req.user.id, items: orderItems, total });
+        // Crear la orden con status 'pending' por defecto
+        const order = await Order.create({ userId: req.user.id, items: orderItems, total, status: 'pending' });
 
         return res.json({
             message: 'Compra realizada con éxito',

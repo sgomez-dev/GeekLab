@@ -8,14 +8,21 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Navbar from './components/Navbar.vue';
+import { useCartStore } from './stores/cartStore';
 
 const route = useRoute();
+const cartStore = useCartStore();
 
 const showNavbar = computed(() => {
   return route.path !== '/login' && route.path !== '/register';
+});
+
+onMounted(() => {
+  // Inicializar el carrito al cargar la app para recuperar el carrito guardado
+  cartStore.init();
 });
 </script>
 

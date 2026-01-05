@@ -42,6 +42,8 @@ front/
 │   │   ├── cartStore.js
 │   │   └── userStore.js
 │   ├── views/
+│   │   ├── AdminOrdersView.vue
+│   │   ├── AdminUsersView.vue
 │   │   ├── CreateProduct.vue
 │   │   ├── ForumView.vue
 │   │   ├── LoginView.vue
@@ -110,6 +112,8 @@ front/
 - `/products/create` - Crear producto (requiere admin)
 - `/products/:id` - Detalle de producto (requiere auth)
 - `/products/:id/edit` - Editar producto (requiere admin)
+- `/admin/users` - Gestión de usuarios (requiere admin)
+- `/admin/orders` - Gestión de órdenes (requiere admin)
 - `/forum` - Foro de discusión (requiere auth)
 - `/account` - Perfil de usuario (requiere auth)
 - `/:pathMatch(.*)*` - Página 404 para rutas no encontradas
@@ -154,12 +158,31 @@ front/
 - Modo edición detectado automáticamente por ruta
 - Modal de confirmación para eliminar productos
 
+#### `AdminUsersView.vue`
+
+- Vista de gestión de usuarios para administradores
+- Tabla con listado de todos los usuarios
+- Cambio de roles (usuario/administrador)
+- Creación de nuevos usuarios con modal
+- Eliminación de usuarios con confirmación
+- Protección: no se puede modificar el propio usuario
+
+#### `AdminOrdersView.vue`
+
+- Vista de gestión de órdenes para administradores
+- Listado de todas las órdenes del sistema
+- Información detallada de cada orden
+- Filtros y búsqueda de órdenes
+- Visualización de items comprados y totales
+
 ### Funcionalidades de Admin
 
 - **Crear productos:** Formulario completo con validación
 - **Editar productos:** Mismo formulario, carga datos existentes
 - **Eliminar productos:** Desde vista de edición o cards
 - **Gestionar stock:** Añadir stock cuando producto está fuera de stock
+- **Gestionar usuarios:** Crear, cambiar roles y eliminar usuarios
+- **Ver órdenes:** Acceso a todas las órdenes del sistema
 - **Modales de confirmación:** Para acciones destructivas
 
 ### Validaciones Implementadas

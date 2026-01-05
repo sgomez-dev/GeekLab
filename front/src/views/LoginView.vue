@@ -26,6 +26,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../stores/userStore";
+import { useCartStore } from "../stores/cartStore";
 import VantaBackground from "../components/VantaBackground.vue";
 import logoUrl from "../assets/geeklab-logo.png";
 
@@ -34,11 +35,14 @@ const password = ref("");
 const error = ref(null);
 const router = useRouter();
 const userStore = useUserStore();
+const cartStore = useCartStore();
 
 async function onSubmit() {
   error.value = null;
   try {
     await userStore.login(email.value, password.value);
+    // Recuperar el carrito del usuario después del login
+    cartStore.init();
     router.push("/products");
   } catch (err) {
     error.value = err.response?.data?.message || "Error al iniciar sesión.";

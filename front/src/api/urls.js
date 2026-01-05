@@ -2,16 +2,8 @@ const getBackendUrl = () => {
   if (import.meta.env.VITE_BACKEND_URL) {
     return import.meta.env.VITE_BACKEND_URL;
   }
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname === 'geeklab.sgomez.dev') {
-      return 'https://geeklab-back.sgomez.dev';
-    }
-    if (hostname === '15.15.15.7') {
-      return 'http://15.15.15.7:32131';
-    }
-  }
-  return 'http://15.15.15.7:32131';
+  // Default to localhost for development
+  return 'http://localhost:4000';
 };
 
 let BACKEND_URL = getBackendUrl();

@@ -6,6 +6,8 @@ import ForumView from './views/ForumView.vue';
 import CreateProduct from './views/CreateProduct.vue';
 import ProductDetailView from './views/ProductDetailView.vue';
 import UserProfileView from './views/UserProfileView.vue';
+import AdminUsersView from './views/AdminUsersView.vue';
+import AdminOrdersView from './views/AdminOrdersView.vue';
 import NotFoundView from './views/NotFoundView.vue';
 import { useUserStore } from './stores/userStore';
 
@@ -19,6 +21,8 @@ const routes = [
     { path: '/products/:id', component: ProductDetailView, meta: { requiresAuth: true } },
     { path: '/forum', component: ForumView, meta: { requiresAuth: true } },
     { path: '/account', component: UserProfileView, meta: { requiresAuth: true } },
+    { path: '/admin/users', component: AdminUsersView, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/admin/orders', component: AdminOrdersView, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/:pathMatch(.*)*', component: NotFoundView },
 ];
 
