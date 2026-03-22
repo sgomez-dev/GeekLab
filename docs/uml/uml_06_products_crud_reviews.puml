@@ -1,0 +1,44 @@
+@startuml
+title Productos - CRUD + Reseñas + Control por rol
+
+actor Usuario as U
+actor Admin as A
+
+participant "ProductsPage" as Products
+participant "ProductDetailPage" as Detail
+participant "ProductFormPage" as Form
+participant "Backend /api/products" as ProdAPI
+participant "Backend /api/users" as UsersAPI
+
+== Listado ==
+U -> Products : Entrar a /products
+Products -> ProdAPI : GET /api/products (JWT si aplica)
+ProdAPI --> Products : array productos
+Products -> U : render cards (nombre, precio, estado activo/no activo)
+
+== Detalle + reseñas ==
+U -> Detail : Entrar a /products/:id
+Detail -> ProdAPI : GET /api/products/:id
+ProdAPI --> Detail : producto + reviews
+U -> Detail : POST reseña (rating,comment)
+Detail -> ProdAPI : POST /api/products/:id/reviews + JWT
+ProdAPI --> Detail : reviews actualizadas
+
+== Admin CRUD ==
+A -> Form : Crear producto
+Form -> ProdAPI : POST /api/products + multipart image + JWT (admin)
+ProdAPI --> Form : producto creado
+
+A -> Form : Editar producto
+Form -> ProdAPI : PUT /api/products/:id + multipart image + JWT (admin)
+
+A -> Products : Eliminar producto (desde card / detalle)
+Products -> ProdAPI : DELETE /api/products/:id + JWT (admin)
+ProdAPI --> Products : OK
+
+note over Products,Detail
+  UI muestra/oculta botones admin\nsegún $isAdminStore.
+end note
+
+@enduml
+

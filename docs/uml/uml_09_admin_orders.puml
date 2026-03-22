@@ -1,0 +1,24 @@
+@startuml
+title AdminOrdersPage - GET /orders + PUT /orders/:id/status
+
+actor Admin as A
+participant "AdminOrdersPage" as AO
+participant "ConfirmModal" as C
+participant "Backend /api/orders" as OrdersAPI
+
+A -> AO : Entrar a /admin/orders
+AO -> OrdersAPI : GET /api/orders + JWT (admin)
+OrdersAPI --> AO : lista pedidos con userId + items
+
+loop por cada pedido
+  A -> AO : Click \"Marcar completado\" (si pending)
+  AO -> C : open confirm (nextStatus=completed)
+  A -> C : Confirmar
+  C -> AO : onConfirm()
+  AO -> OrdersAPI : PUT /api/orders/:id/status\n{status:completed} + JWT
+  OrdersAPI --> AO : order actualizada
+  AO -> A : actualizar tabla + toast success
+end
+
+@enduml
+

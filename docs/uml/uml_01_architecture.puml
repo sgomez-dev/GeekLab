@@ -1,0 +1,30 @@
+@startuml
+title GeekLab - Arquitectura (Frontend Svelte SPA + Backend REST + Socket.io)
+
+actor "Usuario (user)" as U
+actor "Admin (admin)" as A
+
+rectangle "Frontend\nSvelte 5 SPA" as FE {
+  component "Router (svelte-spa-router)\nwrap(conditions)" as R
+  component "App.svelte\nrunes + protección" as APP
+  component "UI Pages/Components\nLogin/Products/Admin/etc." as UI
+}
+
+rectangle "Backend\nNode.js + Express" as BE {
+  component "REST API (/api)" as REST
+  component "JWT Auth middleware" as AUTH
+  component "Socket.io\nforum:new events" as WS
+}
+
+database "MongoDB" as DB
+
+U --> FE : Navega + acciones
+A --> FE : Navega + acciones admin
+
+FE --> REST : Axios Requests (JWT en Authorization)
+FE --> WS : Socket.io connect + eventos (forum:new)
+REST --> AUTH : valida JWT/roles
+REST --> DB : CRUD (User/Product/Order/Message)
+
+@enduml
+

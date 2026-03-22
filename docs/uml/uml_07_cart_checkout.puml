@@ -1,0 +1,27 @@
+@startuml
+title Carrito - add/remove/updateQuantity + checkout
+
+actor Usuario as U
+participant "ProductDetailPage" as Detail
+participant "cartStore.js" as Cart
+participant "CartModal" as Modal
+participant "Backend /api/checkout" as CheckoutAPI
+database "localStorage\n(cart:guest / cart:userId)" as LS
+
+U -> Detail : Añadir producto al carrito
+Detail -> Cart : addToCart(product)\n(validación stock UX)
+Cart -> LS : setItem(cart:guest|cart:userId, items)
+
+U -> Modal : Abrir / editar cantidades
+Modal -> Cart : updateQuantity(productId, qty)
+Cart -> LS : persist items
+
+U -> Modal : Finalizar compra (checkout)
+Modal -> Cart : checkout()
+Cart -> CheckoutAPI : POST /api/checkout\n(body { items })
+CheckoutAPI --> Cart : order creada / resultado
+Cart -> LS : clearCart()
+
+Modal -> U : toast éxito + cerrar modal
+@enduml
+

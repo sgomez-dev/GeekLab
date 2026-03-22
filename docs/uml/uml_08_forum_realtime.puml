@@ -1,0 +1,26 @@
+@startuml
+title Foro - Mensajes históricos + tiempo real
+
+actor Usuario as U
+participant "ForumPage" as Forum
+participant "Backend /api/forum/messages" as ForumREST
+participant "Socket.io Server" as Socket
+participant "Socket.io Client" as Client
+
+U -> Forum : Entrar a /forum (requiere auth)
+Forum -> ForumREST : GET /api/forum/messages + JWT
+ForumREST --> Forum : mensajes históricos
+
+Forum -> Client : connect Socket.io\n(transports websocket+polling)
+
+Forum -> U : render feed
+
+== Enviar mensaje ==
+U -> Forum : Escribir mensaje + Submit
+Forum -> ForumREST : POST /api/forum/messages {content} + JWT
+ForumREST --> Socket : emitir evento (forum:new)
+Socket --> Client : evento forum:new(msg)
+Client -> Forum : upsertMessage(msg)
+
+@enduml
+

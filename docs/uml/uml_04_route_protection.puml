@@ -1,0 +1,28 @@
+@startuml
+title Frontend - Protección de rutas (Auth y Admin)
+
+start
+:Intentar navegar a una ruta;
+
+if (ruta requiere auth?) then (requireAuth=true)
+  if (token JWT existe?) then (tokenStore != null)
+    :Auth OK;
+  else (tokenStore null)
+    :Redirigir a /login;
+    stop
+  endif
+endif
+
+if (ruta requiere admin?) then (requireAdmin=true)
+  if (user.role == admin?) then (userStore.role)
+    :Admin OK;
+  else
+    :Redirigir a /products (fallback);
+    stop
+  endif
+endif
+
+:Renderizar página destino;
+stop
+@enduml
+

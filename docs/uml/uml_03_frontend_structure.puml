@@ -1,0 +1,69 @@
+@startuml
+title Frontend - Estructura y dependencias
+
+package "front/src" {
+  [routes/routes.js] as Routes
+  [App.svelte] as App
+  [services/api.ts] as Api
+
+  package "state/" as State {
+    [appStore.js\n(token/user/products)] as AppStore
+    [appContext.js\ncallbacks] as Context
+    [cartStore.js\ncart + localStorage] as CartStore
+    [toastStore.js\ntoasts] as ToastStore
+  }
+
+  package "pages/" as Pages {
+    [LoginPage] as Login
+    [RegisterPage] as Register
+    [ProductsPage] as Products
+    [ProductDetailPage] as Detail
+    [ProductFormPage] as Form
+    [AdminUsersPage] as AdminUsers
+    [AdminOrdersPage] as AdminOrders
+    [ForumPage] as Forum
+    [UserProfilePage] as Profile
+    [NotFoundPage] as NotFound
+  }
+
+  package "components/" as Components {
+    [Navbar] as Navbar
+    [ProductCard] as ProductCard
+    [CartModal] as CartModal
+    [ConfirmModal] as ConfirmModal
+    [ToastContainer] as ToastContainer
+  }
+}
+
+App --> Routes : configura SPA + protección
+App --> Api : setAuthToken(token)
+App --> AppStore : sets stores
+App --> Context : setContext(appActionsKey, callbacks)
+
+Routes --> Login
+Routes --> Register
+Routes --> Products
+Routes --> Detail
+Routes --> Form
+Routes --> Profile
+Routes --> AdminUsers
+Routes --> AdminOrders
+Routes --> Forum
+Routes --> NotFound
+
+Products --> ProductCard
+Detail --> CartModal
+Products --> ConfirmModal : delete confirm
+AdminUsers --> ConfirmModal : user delete confirm
+AdminOrders --> ConfirmModal : status change confirm
+
+Api --> "REST API (/api)" as REST
+CartModal --> CartStore : checkout/update qty
+ToastContainer --> ToastStore : render toasts
+
+note right of App
+  runes: $state, $derived, $effect, $props
+end note
+
+@enduml
+

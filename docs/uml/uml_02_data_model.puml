@@ -1,0 +1,65 @@
+@startuml
+title GeekLab - Modelo de datos (simplificado)
+
+class "User" as User {
+  +_id
+  username
+  email
+  password(hash)
+  role(user/admin)
+}
+
+class "Product" as Product {
+  +_id
+  name
+  brand
+  price
+  description
+  category
+  stock
+  image
+  averageRating
+  numReviews
+}
+
+class "Review" as Review {
+  userId
+  username
+  rating(1..5)
+  comment
+  createdAt
+}
+
+class "Order" as Order {
+  +_id
+  userId
+  total
+  status(pending/completed)
+  createdAt
+}
+
+class "OrderItem" as OrderItem {
+  productId
+  name
+  price
+  quantity
+}
+
+class "Message" as Message {
+  +_id
+  userId
+  username
+  content
+  createdAt
+}
+
+User "1" --> "0..*" Review : writes
+Product "1" --> "0..*" Review : contains
+
+User "1" --> "0..*" Order : owns
+Order "1" --> "1..*" OrderItem : has items
+Product "1" --> "0..*" OrderItem : referenced by
+
+User "1" --> "0..*" Message : sends
+@enduml
+

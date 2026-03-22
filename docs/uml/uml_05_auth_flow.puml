@@ -1,0 +1,36 @@
+@startuml
+title Auth - Login/Register/Logout/Change Password
+
+actor Usuario as U
+participant "LoginPage (Svelte)" as Login
+participant "RegisterPage (Svelte)" as Reg
+participant "UserProfilePage (Svelte)" as Profile
+participant "Frontend stores (token/user)" as FEStore
+participant "Backend /api/auth" as AuthAPI
+
+== Login ==
+U -> Login : POST /login\n(email,password)
+Login -> AuthAPI : POST /api/auth/login\n{ email, password }
+AuthAPI --> Login : { token, username, role }
+Login -> FEStore : set token/user + localStorage
+Login -> U : navegar a /products
+
+== Register ==
+U -> Reg : POST /register\n(username,email,password)
+Reg -> AuthAPI : POST /api/auth/register\nrole='user'
+AuthAPI --> Reg : OK (201)
+Reg -> U : toast success + redirigir a /login
+
+== Change Password ==
+U -> Profile : Cambiar contraseña (newPassword)
+Profile -> AuthAPI : PUT /api/auth/password\n{ password:newPassword }
+AuthAPI --> Profile : OK
+Profile -> U : toast success
+
+== Logout ==
+U -> Profile : Logout
+Profile -> FEStore : clear token/user/products
+Profile -> U : navegar a /login
+
+@enduml
+
