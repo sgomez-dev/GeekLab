@@ -1,16 +1,10 @@
-import { createApp } from 'vue'
-import { createPinia, setActivePinia } from 'pinia'
-import App from './App.vue'
-import router, { setupRouterGuard } from './router'
-import './style.css'
+import { mount } from 'svelte';
+import App from './App.svelte';
+import './style.css';
 
-const app = createApp(App);
-const pinia = createPinia();
+const target = document.getElementById('app');
+if (!target) {
+  throw new Error('Missing #app mount element');
+}
 
-setActivePinia(pinia);
-app.use(pinia);
-
-setupRouterGuard();
-app.use(router);
-
-app.mount('#app');
+mount(App, { target });
