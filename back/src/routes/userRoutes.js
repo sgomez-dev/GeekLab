@@ -68,6 +68,65 @@ router.get('/:id', authenticateJWT, requireAdmin, async (req, res) => {
     }
 });
 
+// Actualizar usuario (admin only): username, email, contraseña opcional, rol
+router.put('/:id', authenticateJWT, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, email, password, role } = req.body;
+
+        const wantsUsername = username !== undefined && username !== null;
+        const wantsEmail = email !== undefined && email !== null;
+        const wantsPassword = password !== undefined && password !== null && String(password).length > 0;
+        const wantsRole = role !== undefined && role !== null;
+
+        if (!wantsUsername && !wantsEmail && !wantsPassword && !wantsRole) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'No fields to update' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+        }
+
+        if (wantsUsername) {
+            const u = String(username).trim();
+            if (!u) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username cannot be empty' });
+            user.username = u;
+        }
+        if (wantsEmail) {
+            const e = String(email).trim().toLowerCase();
+            if (!e) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Email cannot be empty' });
+            user.email = e;
+        }
+        if (wantsPassword) {
+            if (String(password).length < 6) {
+                return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Password must be at least 6 characters' });
+            }
+            user.password = password;
+        }
+        if (wantsRole) {
+            if (!['user', 'admin'].includes(role)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid role. Must be "user" or "admin"' });
+            }
+            if (String(id) === String(req.user.id)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Cannot change your own role' });
+            }
+            user.role = role;
+        }
+
+        await user.save();
+        const userResponse = user.toObject();
+        delete userResponse.password;
+        res.json({ message: 'User updated successfully', user: userResponse });
+    } catch (error) {
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern || {})[0] || 'field';
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: `${field} already exists` });
+        }
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+});
+
 // Cambiar rol de usuario (admin only)
 router.put('/:id/role', authenticateJWT, requireAdmin, async (req, res) => {
     try {

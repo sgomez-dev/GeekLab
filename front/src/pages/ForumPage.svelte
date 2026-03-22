@@ -12,7 +12,7 @@
   const SOCKET_URL = getBackendUrl();
 
   let messages = $state([]);
-  let content = $state('');
+  let messageDraft = $state('');
 
   let loading = $state(true);
   let sending = $state(false);
@@ -46,7 +46,7 @@
 
   async function submitMessage() {
     if (sending) return;
-    const text = content.trim();
+    const text = messageDraft.trim();
     if (!text) {
       error = 'El contenido es requerido';
       return;
@@ -58,7 +58,7 @@
       const res = await api.post('/forum/messages', { content: text });
       // Normalmente el socket emitirá el evento; aun así, agregamos si no está.
       upsertMessage(res.data);
-      content = '';
+      messageDraft = '';
       addToast({ type: 'success', message: 'Mensaje enviado', duration: 2500 });
     } catch (e) {
       error = e?.response?.data?.message || e?.message || 'Error al enviar el mensaje';
@@ -120,7 +120,7 @@
                     {m.createdAt ? new Date(m.createdAt).toLocaleString() : ''}
                   </span>
                 </div>
-                <div class="content">{m.content}</div>
+                <div class="message-body">{m.content}</div>
               </div>
             {/each}
           </div>
@@ -132,8 +132,9 @@
       <h2>Nuevo mensaje</h2>
 
       <textarea
+        class="composer-input"
         rows="4"
-        bind:value={content}
+        bind:value={messageDraft}
         placeholder="Escribe tu mensaje..."
         maxlength="500"
       ></textarea>
@@ -142,8 +143,8 @@
         <button
           class="primary"
           type="button"
-          on:click={submitMessage}
-          disabled={sending || content.trim().length === 0}
+          onclick={submitMessage}
+          disabled={sending || messageDraft.trim().length === 0}
         >
           {sending ? 'Enviando...' : 'Enviar'}
         </button>
@@ -185,12 +186,13 @@
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
+    grid-template-columns: 1.2fr minmax(0, 0.8fr);
     gap: 16px;
     align-items: start;
   }
 
   .feed {
+    min-width: 0;
     background: #fff;
     border: 1px solid var(--border-color);
     border-radius: 18px;
@@ -198,14 +200,20 @@
   }
 
   .composer {
+    min-width: 0;
     background: rgba(66, 71, 193, 0.05);
     border: 1px solid rgba(66, 71, 193, 0.14);
     border-radius: 18px;
     padding: 14px;
   }
 
-  textarea {
+  textarea.composer-input {
+    display: block;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    resize: vertical;
     border-radius: 14px;
     border: 1px solid rgba(224, 224, 224, 0.95);
     background: #fff;
@@ -213,9 +221,10 @@
     outline: none;
     font-size: 1rem;
     font-family: inherit;
+    line-height: 1.45;
   }
 
-  textarea:focus {
+  textarea.composer-input:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px rgba(66, 71, 193, 0.12);
   }
@@ -228,15 +237,6 @@
     align-items: center;
   }
 
-  .secondary {
-    background: rgba(28, 28, 41, 0.06);
-    border: 1px solid rgba(28, 28, 41, 0.14);
-    color: var(--secondary-color);
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-weight: 900;
-  }
-
   .primary {
     border: none;
     background: var(--primary-color);
@@ -247,8 +247,7 @@
     cursor: pointer;
   }
 
-  .primary:disabled,
-  .secondary:disabled {
+  .primary:disabled {
     opacity: 0.7;
     cursor: not-allowed;
   }
@@ -284,8 +283,10 @@
     white-space: nowrap;
   }
 
-  .content {
+  .message-body {
     white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
     color: rgba(28, 28, 41, 0.85);
     line-height: 1.5;
   }
