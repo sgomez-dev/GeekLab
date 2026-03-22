@@ -25,21 +25,21 @@
 
   const products = $derived($productsStore);
 
-  const availableBrands = $derived(() => {
+  const availableBrands = $derived.by(() => {
     const brands = products
       .map((p) => p?.brand)
       .filter((b) => b && String(b).trim().length > 0);
     return [...new Set(brands)].sort();
   });
 
-  const availableCategories = $derived(() => {
+  const availableCategories = $derived.by(() => {
     const cats = products
       .map((p) => p?.category)
       .filter((c) => c && String(c).trim().length > 0);
     return [...new Set(cats)].sort();
   });
 
-  const filteredProducts = $derived(() => {
+  const filteredProducts = $derived.by(() => {
     let list = products.slice();
 
     // Priorizar los más recientes si el backend devuelve orden por creación
@@ -80,7 +80,7 @@
     return list;
   });
 
-  const hasActiveFilters = $derived(() => {
+  const hasActiveFilters = $derived.by(() => {
     return (
       searchTerm.trim().length > 0 ||
       selectedBrand.length > 0 ||

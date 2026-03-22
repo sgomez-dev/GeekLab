@@ -10,6 +10,7 @@
 
   const nav = [
     { href: '/products', label: 'Productos' },
+    { href: '/forum', label: 'Foro' },
     { href: '/account', label: 'Mi cuenta' },
   ];
 
@@ -62,7 +63,8 @@
           class="nav-link"
           class:active={
             currentPath === item.href ||
-            (item.href === '/products' && currentPath.startsWith('/products'))
+            (item.href === '/products' && currentPath.startsWith('/products')) ||
+            (item.href === '/forum' && currentPath.startsWith('/forum'))
           }
           use:link
         >

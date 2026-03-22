@@ -84,8 +84,13 @@
 
       existingCategories = [...new Set(cats)].sort((a, b) => a.localeCompare(b));
       syncCategoryInput(category);
+      // Sin productos aún no hay categorías en catálogo: ofrecer crear una sin paso extra.
+      if (!productId() && existingCategories.length === 0 && !categorySelection) {
+        categorySelection = '__new__';
+      }
     } catch {
       existingCategories = [];
+      if (!productId()) categorySelection = '__new__';
     }
   }
 

@@ -73,10 +73,12 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors({
   origin: [
-    'http://15.15.15.7:32136', 
-    'https://geeklab.sgomez.dev', 
+    'http://15.15.15.7:32136',
+    'https://geeklab.sgomez.dev',
     'http://localhost:32136',
-    'https://geeklab-back.sgomez.dev'
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://geeklab-back.sgomez.dev',
   ],
   credentials: true,
 }));
