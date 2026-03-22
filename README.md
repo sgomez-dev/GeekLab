@@ -1,6 +1,6 @@
 # GeekLab - E-commerce de Productos de Informática
 
-Aplicación web full-stack para la venta de productos de informática, desarrollada con Vue.js 3 y Node.js/Express.
+Aplicación web full-stack para la venta de productos de informática, con backend Node.js/Express y frontend en Svelte 5 (Vite, runes) consumiendo endpoints REST protegidos con JWT/roles.
 
 ## Tabla de Contenidos
 
@@ -34,13 +34,12 @@ GeekLab es una plataforma de e-commerce especializada en productos de informáti
 
 ### Frontend
 
-- **Vue.js 3.5** - Framework JavaScript reactivo con Composition API
-- **Vue Router 4** - Enrutamiento de la aplicación con guards de navegación
-- **Pinia 3** - Gestión de estado (reemplazo de Vuex)
-- **Axios 1.13** - Cliente HTTP para peticiones API
-- **Socket.io Client 4.8** - Comunicación en tiempo real
-- **Vite 7** - Herramienta de construcción y desarrollo ultrarrápida
-- **Vanta.js** - Efectos de fondo 3D interactivos
+- **Svelte 5 + Runes** - Estado con `$state`, cálculos con `$derived` y efectos con `$effect`
+- **svelte-spa-router** - Navegación SPA y protección de rutas con `wrap()` + `conditions`
+- **Axios** - Cliente HTTP para peticiones API con JWT (`Authorization: Bearer <token>`)
+- **Socket.io Client 4.8** - Comunicación en tiempo real (foro)
+- **Vite (8)** - Tooling de build/desarrollo
+- **Vanta.js** - Efectos visuales 3D (si están presentes en tu UI)
 
 ### Backend
 
@@ -77,12 +76,12 @@ GeekLab/
 │   │   ├── api/
 │   │   ├── assets/
 │   │   ├── components/
-│   │   ├── composables/
-│   │   ├── stores/
-│   │   ├── views/
-│   │   ├── App.vue
+│   │   ├── pages/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── state/
+│   │   ├── App.svelte
 │   │   ├── main.js
-│   │   └── router.js
 │   └── package.json
 │
 └── README.md
@@ -148,8 +147,8 @@ El frontend detecta automáticamente el entorno y configura la URL del backend:
 
 Si necesitas cambiar la configuración, modifica:
 
-- `front/src/api/axios.js` - Para peticiones HTTP
-- `front/src/api/socket.js` - Para conexiones WebSocket
+- `front/src/services/api.ts` - Cliente HTTP (Axios) y gestión de token JWT en memoria
+- `front/src/pages/ForumPage.svelte` - Conexiones Socket.io para el foro
 - `front/src/api/urls.js` - Para construcción de URLs de imágenes
 
 ## Ejecución
@@ -262,13 +261,54 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 
 ### Gestión de Estado
 
-**Decisión:** Pinia para gestión de estado global
+**Decisión:** Estado global en `front/src/App.svelte` usando **runes de Svelte 5** (`$state`, `$derived`, `$effect`) y stores de Svelte para estados compartidos (carrito/toast/etc.)
 
 **Razón:**
 
-- Más simple y ligero que Vuex
-- API más intuitiva y moderna
-- Mejor integración con Vue 3 Composition API
+- `$state` para token/usuario/productos y banderas de UI
+- `$derived` para cálculos como `isAdmin` y listas filtradas
+- `$effect` para sincronizar el token con el cliente HTTP y manejar redirecciones
+- Stores en `front/src/state/*` para datos compartidos entre múltiples componentes
+
+### Runes de Svelte 5 usadas (según componente)
+
+- `front/src/App.svelte`: `$state`, `$derived`, `$effect`
+- `front/src/components/Navbar.svelte`: `$state`, `$effect`
+- `front/src/pages/LoginPage.svelte`: (sin runes, estado local con variables normales)
+- `front/src/pages/RegisterPage.svelte`: (sin runes, estado local con variables normales)
+- `front/src/pages/ProductsPage.svelte`: `$state`, `$derived`
+- `front/src/pages/ProductDetailPage.svelte`: `$state`, `$derived`, `$effect`
+- `front/src/pages/ProductFormPage.svelte`: `$state`, `$derived`, `$effect`
+- `front/src/pages/AdminUsersPage.svelte`: `$state`, `$derived`, `$effect`
+- `front/src/pages/AdminOrdersPage.svelte`: `$state` y `onMount`
+- `front/src/pages/UserProfilePage.svelte`: `$state`
+- `front/src/components/ProductCard.svelte`: `$props`
+- `front/src/components/CartModal.svelte`: `$props`, `$state`
+- `front/src/components/ConfirmModal.svelte`: `$props`
+
+### Endpoints REST consumidos (roles)
+
+- Público:
+  - `POST /api/auth/login` (login)
+  - `POST /api/auth/register` (registro)
+- Usuario autenticado (`role: user` o `role: admin`):
+  - `GET /api/products` (listado)
+  - `GET /api/products/:id` (detalle)
+  - `POST /api/products/:id/reviews` (reseñas)
+  - `PUT /api/auth/password` (cambio de contraseña)
+  - `POST /api/checkout` (checkout)
+  - `GET /api/forum/messages` (foros)
+  - `POST /api/forum/messages` (enviar mensaje)
+- Admin (`role: admin`):
+  - `POST /api/products` (crear)
+  - `PUT /api/products/:id` (editar)
+  - `DELETE /api/products/:id` (borrar)
+  - `GET /api/users` (listar)
+  - `POST /api/users` (crear usuario)
+  - `PUT /api/users/:id/role` (cambiar rol)
+  - `DELETE /api/users/:id` (dar de baja)
+  - `GET /api/orders` (listar pedidos)
+  - `PUT /api/orders/:id/status` (cambiar estado)
 
 ### Autenticación
 
@@ -337,25 +377,24 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 
 ### Rutas y Navegación
 
-**Decisión:** Vue Router con rutas protegidas mediante meta fields
+**Decisión:** SPA con `svelte-spa-router` usando precondiciones por ruta (`wrap()` + `conditions`)
 
 **Razón:**
 
 - Declarativo y fácil de mantener
-- Guards de navegación integrados
-- Soporte para rutas dinámicas y parámetros
-- Catch-all route para página 404
+- Protección por `auth/role` evitando render de pantallas privadas
+- Soporte para rutas dinámicas (`/products/:id`) y catch-all (`*`) para 404
 
 ### Componentes Reutilizables
 
-**Decisión:** Componentes Vue modulares y reutilizables
+**Decisión:** Componentes Svelte modulares y reutilizables
 
 **Razón:**
 
 - DRY (Don't Repeat Yourself)
 - Fácil mantenimiento
 - Consistencia en la UI
-- Ejemplos: ProductCard, CartModal, Toast
+- Ejemplos: `ProductCard.svelte`, `CartModal.svelte`, `ToastContainer.svelte`
 
 ### Estilos
 
@@ -376,9 +415,9 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 - Persiste entre sesiones del navegador
 - Rápido (no requiere peticiones al servidor para agregar/remover)
 - Separación por usuario usando keys dinámicas (`cart:userId` / `cart:guest`)
-- No se guarda el stock en el carrito para evitar datos desactualizados
-- Stock se valida siempre contra el catálogo actual al agregar productos
-- Validación final de stock en el backend durante el checkout
+- Se guarda stock solo para UX (limitar stepper y evitar cantidades imposibles)
+- La validación final de stock ocurre siempre en el backend durante el checkout (`POST /api/checkout`)
+- Aun con validación local, el backend es la última fuente de verdad
 
 ### Página 404
 
@@ -399,6 +438,66 @@ O sirve la carpeta `dist/` con tu servidor web preferido (nginx, Apache, etc.)
 - Express evalúa rutas en orden
 - `/products/:id/reviews` debe ir antes de `/products/:id`
 - Evita conflictos y errores 404 incorrectos
+
+## Frontend Svelte 5: runes y endpoints consumidos (según el PDF)
+
+### Runes usadas (y dónde)
+
+- `front/src/App.svelte`
+  - `$state`: `token`, `user`, `products` y banderas de UI
+  - `$derived`: `role/isAdmin` y `filteredProducts`
+  - `$effect`: sincroniza el token con el cliente HTTP y redirige cuando aplica
+- `front/src/pages/ProductsPage.svelte`
+  - `$state`: búsqueda/filtros/local UI
+  - `$derived`: marcas/categorías disponibles y lista filtrada
+  - callbacks: eliminar productos (admin)
+- `front/src/pages/ProductDetailPage.svelte`
+  - `$state`: formulario de reseñas y estado de UI (añadir al carrito, confirm delete)
+  - `$derived`: validación `canSubmitReview`
+- `front/src/pages/ProductFormPage.svelte`
+  - `$state`: campos del formulario y carga/errores
+  - `$derived`: modo `create/edit` según `params`
+  - `$effect`: carga del producto cuando se edita
+- `front/src/pages/AdminUsersPage.svelte`
+  - `$state`: modales, carga y formularios
+  - `$derived`: `currentUserId` para deshabilitar acciones destructivas sobre tu cuenta
+- `front/src/pages/ForumPage.svelte`
+  - `$state`: mensajes, contenido y estado del socket
+
+### Endpoints REST usados y roles
+
+La API base está montada en `/api` (token JWT en header `Authorization: Bearer <token>`).
+
+- Auth
+  - `POST /api/auth/login`: `user` y `admin`
+  - `POST /api/auth/register` (si se usa): `user`
+  - Cambio de contraseña (si se usa en la UI): requiere `authenticateJWT`
+- Productos (catálogo)
+  - `GET /api/products`: `user` y `admin`
+  - `GET /api/products/:id`: `user` y `admin`
+- Productos (admin)
+  - `POST /api/products`: `admin`
+  - `PUT /api/products/:id`: `admin`
+  - `DELETE /api/products/:id`: `admin`
+- Reseñas (user/admin)
+  - `POST /api/products/:id/reviews`: requiere `user` autenticado (el backend protege con JWT)
+- Usuarios (admin)
+  - `GET /api/users`: `admin`
+  - `POST /api/users`: `admin`
+  - `PUT /api/users/:id/role`: `admin`
+  - `DELETE /api/users/:id`: `admin`
+- Checkout (user/admin)
+  - `POST /api/checkout`: requiere `user` autenticado
+  - Validación final de stock en el backend
+- Foro (user/admin)
+  - `GET /api/forum/messages`: `user` y `admin`
+  - `POST /api/forum/messages`: requiere `user` autenticado
+  - Socket: evento `forum:new` (broadcast del backend a todos los clientes)
+
+### Rutas protegidas en el frontend
+
+- `user`: `/products`, `/products/:id`, `/account`, `/forum`
+- `admin`: `/products/create`, `/products/:id/edit`, `/admin/users`, `/admin/orders`
 
 ## Características Principales
 
@@ -493,7 +592,7 @@ La aplicación está desplegada en un servidor propio usando:
 - **Contenedores Docker:**
 
   - Backend: Node.js con Express y Socket.io
-  - Frontend: Build estático de Vue servido con Nginx
+  - Frontend: Build estático de Svelte servido con Nginx
   - Ambos servicios corriendo como pods en Kubernetes
 
 - **Base de Datos:**

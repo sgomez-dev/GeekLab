@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [svelte()],
   server: {
     host: '0.0.0.0',
     port: 32136,
@@ -40,7 +40,7 @@ export default defineConfig({
     // Force re-optimization when dependencies change
     force: process.env.VITE_FORCE_OPTIMIZE === 'true',
     // Include common dependencies that might cause issues
-    include: ['vue', 'vue-router', 'pinia', 'axios', 'socket.io-client']
+    include: ['axios', 'socket.io-client', 'svelte', 'svelte-spa-router']
   },
   // Build configuration
   build: {
