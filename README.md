@@ -561,6 +561,13 @@ La API base está montada en `/api` (token JWT en header `Authorization: Bearer 
 - **Documentación completa:** Ver [GRAPHQL_DOCUMENTATION.md](GRAPHQL_DOCUMENTATION.md)
 - **Introspección:** Habilitada para exploración con herramientas como GraphQL Playground
 
+## Documentación del backend Python (`back-py/`)
+
+Como parte de la práctica de migración, se desarrolló un backend alternativo en **Python con FastAPI** que actúa como drop-in replacement del backend Node.js original. Toda la documentación específica de este nuevo backend se encuentra en:
+
+- **[back-py/README.md](back-py/README.md)** — Instalación, ejecución, endpoints, decisiones de arquitectura y verificación manual.
+- **[back-py/AI_USAGE.md](back-py/AI_USAGE.md)** — Memoria del uso de Inteligencia Artificial: prompts, iteraciones, y análisis crítico de errores/alucinaciones.
+
 ## Notas Adicionales
 
 - El proyecto usa ES Modules (`type: "module"` en package.json)
